@@ -1,0 +1,38 @@
+{
+  "name": "track-gluer-togetherer",
+  "version": "1.0.0",
+  "description": "minimal tool to merge mp3 collections",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-mac": "electron-builder --mac",
+    "build-win": "electron-builder --win",
+    "build-linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.trackgluer.app",
+    "productName": "track gluer togetherer",
+    "directories": {
+      "output": "../dist"
+    },
+    "files": [
+      "**/*",
+      "../trackgluer.py",
+      "../merge_albums.py",
+      "../album_merger_env/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.music"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
