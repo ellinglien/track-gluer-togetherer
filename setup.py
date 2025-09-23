@@ -13,13 +13,11 @@ from pathlib import Path
 def check_and_install_dependencies():
     """Check and install required dependencies in virtual environment"""
     print("Checking dependencies...")
-
     # Check Python version
     if sys.version_info < (3, 8):
         print("❌ Python 3.8 or higher is required")
         return False
     print("✅ Python version OK")
-
     # Check ffmpeg
     try:
         subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
@@ -62,7 +60,6 @@ def check_and_install_dependencies():
     print(f"   source venv/bin/activate  # (or venv\\Scripts\\activate on Windows)")
     print(f"   python trackgluer.py")
     print(f"\n   Or simply run: python3 run.py")
-
     return True
 
 def create_app_bundle():
