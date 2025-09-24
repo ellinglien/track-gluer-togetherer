@@ -134,11 +134,22 @@ class AlbumMerger:
         # Remove any remaining non-alphanumeric characters except spaces and hyphens
         normalized = re.sub(r'[^\w\s-]', '', normalized)
         
-        # If we've stripped everything, return the original in lowercase
+        # If we've stripped everything, return the original preserving case
         if not normalized:
-            return album.lower()
-            
-        return normalized
+            return album
+
+        # Try to preserve original case: if the normalized result is found in the original (case-insensitive),
+        # extract the corresponding portion from the original to preserve case
+        original_lower = album.lower()
+        if normalized in original_lower:
+            start_pos = original_lower.find(normalized)
+            if start_pos >= 0:
+                end_pos = start_pos + len(normalized)
+                return album[start_pos:end_pos]
+
+        # If we can't preserve case exactly, return the original album name
+        # (this ensures "TOTO" stays "TOTO" instead of becoming "toto")
+        return album
 
         # Remove common prefixes that might vary
         prefixes_to_remove = [

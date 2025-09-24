@@ -1510,8 +1510,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         .brutalist-loader {
-            width: 200px;
-            height: 120px;
+            width: 280px;
+            height: 160px;
             margin: 0 auto;
             position: relative;
             border: 4px solid #000;
@@ -1532,9 +1532,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         .bar {
-            width: 12px;
+            width: 16px;
             background: #000;
-            animation: brutalist-pulse 2.4s infinite;
+            animation: brutalist-pulse 3.6s infinite steps(8, end);
             transform-origin: bottom;
         }
 
@@ -1548,16 +1548,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         .bar:nth-child(8) { animation-delay: 1.4s; }
         .bar:nth-child(9) { animation-delay: 1.6s; }
         .bar:nth-child(10) { animation-delay: 1.8s; }
-
-        .brutalist-glitch {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #000;
-            animation: glitch-slide 3s infinite linear;
-        }
 
         .brutalist-text {
             position: absolute;
@@ -1573,13 +1563,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         @keyframes brutalist-pulse {
-            0%, 100% { height: 20px; }
-            50% { height: 80px; }
-        }
-
-        @keyframes glitch-slide {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
+            0%, 100% { height: 30px; }
+            50% { height: 120px; }
         }
 
         @keyframes text-flicker {
@@ -1594,10 +1579,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         .musicbrainz-loader .bar {
-            background: #fff;
-        }
-
-        .musicbrainz-loader .brutalist-glitch {
             background: #fff;
         }
 
@@ -1640,7 +1621,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <button class="btn" onclick="browseOutputFolder()">browse</button>
                     </div>
 
-                    <div style="margin-top: 15px;">
+                    <div style="margin-top: 15px; margin-bottom: 20px;">
                         <label>
                             <input type="checkbox" id="deleteOriginals" class="album-checkbox">
                             delete original files after merge
@@ -1649,7 +1630,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 </div>
 
 
-                <button class="btn hidden" onclick="startMerge('albums')" id="startMergeBtn">glue em</button>
+                <button class="btn hidden" onclick="startMerge('albums')" id="startMergeBtn" style="width: 100%; text-align: center; font-size: 1.2em; padding: 15px;">glue em</button>
             </div>
 
             <div class="step" id="step3">
@@ -1692,8 +1673,10 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
     </div>
 
     <script>
+        console.log('JavaScript loading started...');
         let currentSession = null;
         let browseMode = 'input'; // 'input' or 'output'
+        console.log('Variables initialized successfully...');
 
         async function scanFolder() {
             const folderPath = document.getElementById('folderPath').value;
@@ -1702,28 +1685,26 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             // Show loading animation
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.add('active');
-            document.getElementById('previewContent').innerHTML = `
-                <div style="text-align: center; padding: 40px;">
-                    <div class="loader">
-                        <div class="brutalist-text">SCANNING FOLDER</div>
-                        <div class="brutalist-loader">
-                            <div class="brutalist-glitch"></div>
-                            <div class="brutalist-bars">
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            document.getElementById('previewContent').innerHTML =
+                '<div style="text-align: center; padding: 40px;">' +
+                    '<div class="loader">' +
+                        '<div class="brutalist-text">SCANNING FOLDER</div>' +
+                        '<div class="brutalist-loader">' +
+                            '<div class="brutalist-bars">' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
 
             try {
                 const response = await fetch('/api/scan_folder', {
@@ -1754,28 +1735,26 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             // Show loading animation
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.add('active');
-            document.getElementById('previewContent').innerHTML = `
-                <div style="text-align: center; padding: 40px;">
-                    <div class="loader">
-                        <div class="brutalist-text">MUSICBRAINZ GROUPING</div>
-                        <div class="brutalist-loader musicbrainz-loader">
-                            <div class="brutalist-glitch"></div>
-                            <div class="brutalist-bars">
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            document.getElementById('previewContent').innerHTML =
+                '<div style="text-align: center; padding: 40px;">' +
+                    '<div class="loader">' +
+                        '<div class="brutalist-text">MUSICBRAINZ GROUPING</div>' +
+                        '<div class="brutalist-loader musicbrainz-loader">' +
+                            '<div class="brutalist-bars">' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
 
             try {
                 const response = await fetch('/api/musicbrainz_resort', {
@@ -1809,28 +1788,26 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             // Show loading animation
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.add('active');
-            document.getElementById('previewContent').innerHTML = `
-                <div style="text-align: center; padding: 40px;">
-                    <div class="loader">
-                        <div class="brutalist-text">LOADING ALL FILES</div>
-                        <div class="brutalist-loader">
-                            <div class="brutalist-glitch"></div>
-                            <div class="brutalist-bars">
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            document.getElementById('previewContent').innerHTML =
+                '<div style="text-align: center; padding: 40px;">' +
+                    '<div class="loader">' +
+                        '<div class="brutalist-text">LOADING ALL FILES</div>' +
+                        '<div class="brutalist-loader">' +
+                            '<div class="brutalist-bars">' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                                '<div class="bar"></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
 
             try {
                 const response = await fetch('/api/glue_em_all', {
@@ -1859,25 +1836,164 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             console.log('Total albums:', preview.total_albums);
             console.log('Loose files count:', preview.loose_files?.count);
             console.log('Groupings found:', Object.keys(preview.loose_files?.groupings || {}));
-            
+
+            const content = document.getElementById('previewContent');
+
+            // Simple version - just show basic info and enable merge button
+            let html = '<div class="alert success">Scan completed! Found ' + preview.total_albums + ' albums.</div>';
+
+            if (preview.loose_files && preview.loose_files.groupings) {
+                html += '<h3>Auto-detected groups:</h3>';
+                Object.entries(preview.loose_files.groupings).forEach(([albumName, group]) => {
+                    const albumId = albumName.replace(/[^a-zA-Z0-9]/g, '_');
+                    const isIndividualTracks = albumName === 'Individual Tracks' || albumName === '🎵 Individual Tracks';
+                    const isAllFiles = albumName.startsWith('All Files (') && albumName.includes(' tracks)');
+
+                    html += '<div class="album-group">';
+                    html += '<input type="checkbox" checked class="album-checkbox" id="album_' + albumId + '">';
+
+                    if (isIndividualTracks || isAllFiles) {
+                        // Special handling for Individual Tracks and All Files - allow custom naming
+                        const labelText = isAllFiles ? 'Custom Mix/Compilation:' : 'Custom Album:';
+                        html += '<div style="margin-left: 10px;">';
+                        html += '<div style="margin-bottom: 8px;"><strong>' + labelText + '</strong></div>';
+                        html += '<input type="text" id="custom-title-' + albumId + '" placeholder="Enter album name..." style="width: 300px; padding: 5px; margin-bottom: 5px;">';
+                        html += '<div style="font-size: 0.9em; color: #666;">(' + (group.count || 0) + ' tracks - Various Artists)</div>';
+                        html += '</div>';
+                    } else {
+                        // Regular albums
+                        html += '<span style="margin-left: 10px;"><strong>' + albumName + '</strong> (' + (group.count || 0) + ' tracks)</span>';
+                    }
+
+                    // Add track ordering buttons for all albums with tracks
+                    if (group.files && group.files.length > 1) {
+                        html += '<div style="margin-left: 10px; margin-top: 5px;">';
+                        html += '<button class="btn" onclick="shuffleTracks(' + "'" + albumId + "'" + ')" style="margin-right: 5px;">shuffle</button>';
+                        html += '<button class="btn" onclick="orderTracksByMetadata(' + "'" + albumId + "'" + ')" style="margin-right: 5px;">metadata order</button>';
+                        html += '<button class="btn" onclick="orderTracksAlphabetically(' + "'" + albumId + "'" + ')">alphabetical</button>';
+                        html += '</div>';
+                    }
+
+                    // Add individual track listings with drag and drop functionality
+                    if (group.files && group.files.length > 0) {
+                        html += '<ul class="file-list" id="filelist-' + albumId + '" style="margin-left: 30px; margin-top: 5px; list-style: none; padding: 0;">';
+                        group.files.forEach((fileName, index) => {
+                            // Handle both string filenames and object format
+                            let trackName = '';
+                            if (typeof fileName === 'string') {
+                                trackName = fileName;
+                            } else if (fileName.name) {
+                                trackName = fileName.name;
+                            }
+                            html += '<li class="file-item" draggable="true" data-filename="' + trackName + '" style="padding: 2px 0; cursor: move; border-bottom: 1px solid #eee;">';
+                            html += '<span class="track-number" style="margin-right: 5px; font-weight: bold;">' + (index + 1) + '.</span>';
+                            html += '<span class="track-name" style="font-size: 0.9em;">' + trackName + '</span>';
+                            html += '</li>';
+                        });
+                        html += '</ul>';
+                    }
+                    html += '</div>';
+                });
+            }
+
+            // Also handle existing folders
+            if (preview.existing_folders && preview.existing_folders.length > 0) {
+                html += '<h3>Existing folders:</h3>';
+                preview.existing_folders.forEach((folder) => {
+                    html += '<div class="album-group">';
+                    html += '<input type="checkbox" checked class="album-checkbox" id="folder_' + folder.name.replace(/[^a-zA-Z0-9]/g, '_') + '">';
+                    html += '<span style="margin-left: 10px;"><strong>' + folder.name + '</strong> (' + (folder.count || 0) + ' tracks)</span>';
+
+                    // Add track ordering buttons for existing folders with tracks
+                    if (folder.files && folder.files.length > 1) {
+                        const folderId = folder.name.replace(/[^a-zA-Z0-9]/g, '_');
+                        html += '<div style="margin-left: 10px; margin-top: 5px;">';
+                        html += '<button class="btn" onclick="shuffleTracks(' + "'" + 'folder_' + folderId + "'" + ')" style="margin-right: 5px;">shuffle</button>';
+                        html += '<button class="btn" onclick="orderTracksByMetadata(' + "'" + 'folder_' + folderId + "'" + ')" style="margin-right: 5px;">metadata order</button>';
+                        html += '<button class="btn" onclick="orderTracksAlphabetically(' + "'" + 'folder_' + folderId + "'" + ')">alphabetical</button>';
+                        html += '</div>';
+                    }
+
+                    // Add individual track listings for existing folders with drag and drop
+                    if (folder.files && folder.files.length > 0) {
+                        const folderId = folder.name.replace(/[^a-zA-Z0-9]/g, '_');
+                        html += '<ul class="file-list" id="filelist-folder_' + folderId + '" style="margin-left: 30px; margin-top: 5px; list-style: none; padding: 0;">';
+                        folder.files.forEach((fileName, index) => {
+                            html += '<li class="file-item" draggable="true" data-filename="' + fileName + '" style="padding: 2px 0; cursor: move; border-bottom: 1px solid #eee;">';
+                            html += '<span class="track-number" style="margin-right: 5px; font-weight: bold;">' + (index + 1) + '.</span>';
+                            html += '<span class="track-name" style="font-size: 0.9em;">' + fileName + '</span>';
+                            html += '</li>';
+                        });
+                        html += '</ul>';
+                    }
+                    html += '</div>';
+                });
+            }
+
+            content.innerHTML = html;
+
+            // Initialize drag and drop for all track lists
+            document.querySelectorAll('.file-list').forEach(fileList => {
+                const items = fileList.querySelectorAll('.file-item');
+                items.forEach(item => {
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('drop', handleDrop);
+                    item.addEventListener('dragend', handleDragEnd);
+                });
+            });
+
+            // Automatically apply metadata ordering to all albums as default sort
+            setTimeout(() => {
+                // Apply metadata ordering to auto-detected groups
+                if (preview.loose_files && preview.loose_files.groupings) {
+                    Object.keys(preview.loose_files.groupings).forEach(albumName => {
+                        const albumId = albumName.replace(/[^a-zA-Z0-9]/g, '_');
+                        orderTracksByMetadata(albumId);
+                    });
+                }
+
+                // Apply metadata ordering to existing folders
+                if (preview.existing_folders && preview.existing_folders.length > 0) {
+                    preview.existing_folders.forEach(folder => {
+                        const folderId = folder.name.replace(/[^a-zA-Z0-9]/g, '_');
+                        orderTracksByMetadata('folder_' + folderId);
+                    });
+                }
+            }, 100); // Small delay to ensure DOM elements are ready
+
+            // Show the output section and merge button
+            const outputSection = document.getElementById('outputSection');
+            const startMergeBtn = document.getElementById('startMergeBtn');
+
+            if (outputSection) {
+                outputSection.classList.remove('hidden');
+            }
+            if (startMergeBtn) {
+                startMergeBtn.classList.remove('hidden');
+            }
+
+            /*
+            [Previous complex code commented out for now]
+            console.log('=== PREVIEW DEBUG ===');
+            console.log('Total albums:', preview.total_albums);
+            console.log('Loose files count:', preview.loose_files?.count);
+            console.log('Groupings found:', Object.keys(preview.loose_files?.groupings || {}));
+
             // Log each grouping
             if (preview.loose_files?.groupings) {
                 Object.entries(preview.loose_files.groupings).forEach(([albumName, group]) => {
-                    console.log(`- ${albumName}: ${group.count} files (${group.type})`);
+                    console.log('- ' + albumName + ': ' + group.count + ' files (' + group.type + ')');
                 });
             }
-            
+
             const content = document.getElementById('previewContent');
             let html = '';
 
             if (preview.total_albums === 0) {
-                html += `<div class="alert">
-                    found ${preview.total_albums} albums - try "merge all" for dj mixes or playlists
-                </div>`;
+                html += '<div class="alert">found ' + preview.total_albums + ' albums - try "merge all" for dj mixes or playlists</div>';
             } else {
-                html += `<div class="alert success">
-                    found ${preview.total_albums} albums
-                </div>`;
+                html += '<div class="alert success">found ' + preview.total_albums + ' albums</div>';
             }
 
             if (preview.loose_files && preview.loose_files.groupings && Object.keys(preview.loose_files.groupings || {}).length > 0) {
@@ -1890,53 +2006,66 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     if (isIndividual) {
                         // Fix the albumId to match backend generation
                         const fixedAlbumId = albumName.replace(/[^a-zA-Z0-9]/g, '_');
-                        html += `
-                            <div class="album-group custom-album">
-                                <div class="album-header">
-                                    <input type="checkbox" id="album_${fixedAlbumId}" checked class="album-checkbox">
-                                    <input type="text" id="custom-title-${fixedAlbumId}" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Album">
-                                    <span class="album-type custom">custom</span>
-                                    <button class="btn btn-small" onclick="selectAllTracks('${fixedAlbumId}')" title="Select all tracks">All</button>
-                                    <button class="btn btn-small" onclick="selectNoTracks('${fixedAlbumId}')" title="Deselect all tracks">None</button>
-                                </div>
-                                <p><strong>${group.count} loose tracks - select which to include:</strong></p>
-                                <ul class="file-list" id="filelist-${fixedAlbumId}">
-                                    ${(group.files || []).map((file, index) => `
-                                        <li draggable="true" data-filename="${file}" data-album-id="${fixedAlbumId}" class="custom-track">
-                                            <input type="checkbox" id="track_${fixedAlbumId}_${index}" class="track-checkbox" data-album="${fixedAlbumId}" data-file="${file}" checked>
-                                            <span class="drag-handle">≡</span>
-                                            <span class="track-number">${index + 1}.</span>
-                                            <span class="track-name">${file}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                                <div id="mb-info-${fixedAlbumId}" class="mb-info" style="display: none;"></div>
-                            </div>
-                        `;
+                        html += '<div class="album-group custom-album">';
+                        html += '<div class="album-header">';
+                        html += '<input type="checkbox" id="album_' + fixedAlbumId + '" checked class="album-checkbox">';
+                        html += '<input type="text" id="custom-title-' + fixedAlbumId + '" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Album">';
+                        html += '<span class="album-type custom">custom</span>';
+                        html += '<button class="btn btn-small" onclick="selectAllTracks(\'' + fixedAlbumId.replace(/\'/g, "\\\\'") + '\')" title="Select all tracks">All</button>';
+                        html += '<button class="btn btn-small" onclick="selectNoTracks(\'' + fixedAlbumId.replace(/\'/g, "\\\\'") + '\')" title="Deselect all tracks">None</button>';
+                        html += '</div>';
+                        html += '<p><strong>' + group.count + ' loose tracks - select which to include:</strong></p>';
+                        html += '<ul class="file-list" id="filelist-' + fixedAlbumId + '">';
+
+                        (group.files || []).forEach((file, index) => {
+                            const fileName = typeof file === 'object' ? file.name : file;
+                            const safeFileName = fileName.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                            html += '<li draggable="true" data-filename="' + safeFileName + '" data-album-id="' + fixedAlbumId + '" class="custom-track">';
+                            html += '<input type="checkbox" id="track_' + fixedAlbumId + '_' + index + '" class="track-checkbox" data-album="' + fixedAlbumId + '" data-file="' + safeFileName + '" checked>';
+                            html += '<span class="drag-handle">≡</span>';
+                            html += '<span class="track-number">' + (index + 1) + '.</span>';
+                            html += '<span class="track-name">' + fileName + '</span>';
+                            html += '</li>';
+                        });
+
+                        html += '</ul>';
+                        html += '<div id="mb-info-' + fixedAlbumId + '" class="mb-info" style="display: none;"></div>';
+                        html += '</div>';
                     } else {
-                        // Regular album display
-                        html += `
-                            <div class="album-group">
-                                <div class="album-header">
-                                    <input type="checkbox" id="album_${albumId}" checked class="album-checkbox">
-                                    <span class="album-title">${albumName}</span>
-                                    <span class="album-type ${group.type || 'album'}">${group.type || 'album'}</span>
-                                    <!-- Enhance button temporarily disabled to fix JS error -->
-                                    <!-- <button class="btn btn-small" onclick="enhanceWithMusicBrainz('${albumName}', ${JSON.stringify(group.files || []).replace(/"/g, '&quot;')})" title="Enhance with MusicBrainz data">MusicBrainz</button> -->
-                                </div>
-                                <p><strong>${group.count || 0} tracks</strong></p>
-                                <ul class="file-list" id="filelist-${albumId}">
-                                    ${(group.files || []).map((file, index) => `
-                                        <li draggable="true" data-filename="${file}" data-album-id="${albumId}">
-                                            <span class="drag-handle">≡</span>
-                                            <span class="track-number">${index + 1}.</span>
-                                            <span class="track-name">${file}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                                <div id="mb-info-${albumId}" class="mb-info" style="display: none;"></div>
-                            </div>
-                        `;
+                        // Check if this is a "Glue Em All" album (All Files)
+                        const isGlueEmAll = albumName.startsWith('All Files (') && group.type === 'mix';
+
+                        if (isGlueEmAll) {
+                            // Custom album display for Glue Em All
+                            html += '<div class="album-group custom-album">';
+                            html += '<div class="album-header">';
+                            html += '<input type="checkbox" id="album_' + albumId + '" checked class="album-checkbox">';
+                            html += '<input type="text" id="custom-title-' + albumId + '" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Compilation">';
+                            html += '<span class="album-type mix">mix</span>';
+                            html += '<button class="btn btn-small" onclick="selectAllTracks(\'' + albumId.replace(/\'/g, "\\\\'") + '\')" title="Select all tracks">All</button>';
+                            html += '<button class="btn btn-small" onclick="selectNoTracks(\'' + albumId.replace(/\'/g, "\\\\'") + '\')" title="Deselect all tracks">None</button>';
+                            html += '</div>';
+                            html += '<p><strong>' + (group.count || 0) + ' tracks - select which to include:</strong></p>';
+                        } else {
+                            // Regular album display
+                            html += '<div class="album-group">';
+                            html += '<div class="album-header">';
+                            html += '<input type="checkbox" id="album_' + albumId + '" checked class="album-checkbox">';
+                            html += '<span class="album-title">' + albumName + '</span>';
+                            html += '<span class="album-type ' + (group.type || 'album') + '">' + (group.type || 'album') + '</span>';
+                            html += '</div>';
+                            html += '<p><strong>' + (group.count || 0) + ' tracks</strong></p>';
+                        }
+
+                        html += '<ul class="file-list" id="filelist-' + albumId + '">';
+                        (group.files || []).forEach((file, index) => {
+                            const fileName = typeof file === 'object' ? file.name : file;
+                            const safeFileName = fileName.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                            html += '<li>' + fileName + '</li>';
+                        });
+                        html += '</ul>';
+                        html += '<div id="mb-info-' + albumId + '" class="mb-info" style="display: none;"></div>';
+                        html += '</div>';
                     }
                 }
             }
@@ -1945,28 +2074,27 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 html += '<h3>folders:</h3>';
                 preview.existing_folders.forEach(folder => {
                     const folderId = folder.name.replace(/[^a-zA-Z0-9]/g, '_');
-                    html += `
-                        <div class="album-group">
-                            <div class="album-header">
-                                <input type="checkbox" id="folder_${folderId}" checked class="album-checkbox">
-                                <span class="album-title">${folder.name}</span>
-                                <span class="album-type ${folder.type || 'album'}">${folder.type || 'album'}</span>
-                                <!-- Enhance button temporarily disabled to fix JS error -->
-                                <!-- <button class="btn btn-small" onclick="enhanceWithMusicBrainz('${folder.name}', ${JSON.stringify(folder.files || []).replace(/"/g, '&quot;')})" title="Enhance with MusicBrainz data">MusicBrainz</button> -->
-                            </div>
-                            <p><strong>${folder.count || 0} tracks</strong></p>
-                            <ul class="file-list" id="filelist-${folderId}">
-                                ${folder.files.map((file, index) => `
-                                    <li draggable="true" data-filename="${file}" data-album-id="${folderId}">
-                                        <span class="drag-handle">≡</span>
-                                        <span class="track-number">${index + 1}.</span>
-                                        <span class="track-name">${file}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                            <div id="mb-info-${folderId}" class="mb-info" style="display: none;"></div>
-                        </div>
-                    `;
+                    html += '<div class="album-group">';
+                    html += '<div class="album-header">';
+                    html += '<input type="checkbox" id="folder_' + folderId + '" checked class="album-checkbox">';
+                    html += '<span class="album-title">' + folder.name + '</span>';
+                    html += '<span class="album-type ' + (folder.type || 'album') + '">' + (folder.type || 'album') + '</span>';
+                    html += '</div>';
+                    html += '<p><strong>' + (folder.count || 0) + ' tracks</strong></p>';
+                    html += '<ul class="file-list" id="filelist-' + folderId + '">';
+
+                    folder.files.forEach((file, index) => {
+                        const safeFileName = file.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        html += '<li draggable="true" data-filename="' + safeFileName + '" data-album-id="' + folderId + '">';
+                        html += '<span class="drag-handle">≡</span>';
+                        html += '<span class="track-number">' + (index + 1) + '.</span>';
+                        html += '<span class="track-name">' + file + '</span>';
+                        html += '</li>';
+                    });
+
+                    html += '</ul>';
+                    html += '<div id="mb-info-' + folderId + '" class="mb-info" style="display: none;"></div>';
+                    html += '</div>';
                 });
             }
 
@@ -1984,6 +2112,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             if (startMergeBtn) {
                 startMergeBtn.classList.remove('hidden');
             }
+            */
         }
 
         async function startMerge(mergeType = 'albums') {
@@ -2008,24 +2137,24 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             document.querySelectorAll('.album-checkbox:checked').forEach(checkbox => {
                 if (checkbox.id.startsWith('album_') || checkbox.id.startsWith('folder_')) {
                     selectedAlbums.push(checkbox.id);
-                    console.log(`Selected checkbox ID: ${checkbox.id}`);
+                    console.log('Selected checkbox ID: ' + checkbox.id);
                     
                     // Get custom track order if it exists
                     const albumId = checkbox.id.replace(/^(album_|folder_)/, '');
                     const trackOrder = getTrackOrder(albumId);
                     if (trackOrder) {
                         customTrackOrders[checkbox.id] = trackOrder;
-                        console.log(`Track order for ${checkbox.id}:`, trackOrder);
+                        console.log('Track order for ' + checkbox.id + ':', trackOrder);
                     }
                     
                     // Check if this is a custom album
-                    const customTitleInput = document.getElementById(`custom-title-${albumId}`);
+                    const customTitleInput = document.getElementById('custom-title-' + albumId);
                     if (customTitleInput) {
                         const customData = getCustomAlbumData(albumId);
                         customAlbumTitles[checkbox.id] = customData.title;
                         customAlbumFiles[checkbox.id] = customData.selectedFiles;
-                        console.log(`Custom album: ${customData.title} with ${customData.selectedFiles.length} tracks`);
-                        console.log(`Custom album ID: ${checkbox.id}, Album ID: ${albumId}`);
+                        console.log('Custom album: ' + customData.title + ' with ' + customData.selectedFiles.length + ' tracks');
+                        console.log('Custom album ID: ' + checkbox.id + ', Album ID: ' + albumId);
                     }
                 }
             });
@@ -2036,7 +2165,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             
             // Debug custom files in detail
             Object.entries(customAlbumFiles).forEach(([key, files]) => {
-                console.log(`Custom files for ${key}:`, files);
+                console.log('Custom files for ' + key + ':', files);
             });
 
             try {
@@ -2069,7 +2198,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         function monitorProgress() {
             const interval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/progress/${currentSession}`);
+                    const response = await fetch('/api/progress/' + currentSession);
                     const data = await response.json();
 
                     if (response.ok) {
@@ -2092,7 +2221,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert ${type}`;
+            alertDiv.className = 'alert ' + type;
             alertDiv.textContent = message;
 
             const mainContent = document.querySelector('.main-content');
@@ -2101,18 +2230,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             setTimeout(() => alertDiv.remove(), 5000);
         }
 
-        // Load saved paths on page load
-        window.addEventListener('load', function() {
-            const savedInputPath = localStorage.getItem('lastInputFolder');
-            const savedOutputPath = localStorage.getItem('lastOutputFolder');
-
-            if (savedInputPath) {
-                document.getElementById('folderPath').value = savedInputPath;
-            }
-            if (savedOutputPath) {
-                document.getElementById('outputPath').value = savedOutputPath;
-            }
-        });
+        // Temporarily removed localStorage functionality for debugging
 
         // File Explorer Functions
         let currentFolderPath = '';
@@ -2130,10 +2248,17 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
         
         async function openFileExplorer(path) {
+            console.log('=== OPEN FILE EXPLORER CALLED ===');
+            console.log('Path:', path);
+            console.log('Browse mode:', browseMode);
+
             const modal = document.getElementById('fileExplorerModal');
             const fileList = document.getElementById('fileExplorerList');
             const currentPathElement = document.getElementById('currentPath');
             const goUpButton = document.getElementById('goUpButton');
+
+            console.log('Modal element:', modal);
+            console.log('FileList element:', fileList);
             
             // Show loading
             fileList.innerHTML = '<div class="loading">Loading...</div>';
@@ -2167,12 +2292,19 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     } catch (e) {
                         errorText = 'Failed to read error response';
                     }
-                    throw new Error(`Server error (${response.status}): ${errorText}`);
+                    throw new Error('Server error (' + response.status + '): ' + errorText);
                 }
                 
                 let data;
                 try {
                     data = await response.json();
+                    console.log('=== FILE EXPLORER RESPONSE ===');
+                    console.log('Full response data:', data);
+                    console.log('Current path:', data.current_path);
+                    console.log('Parent path:', data.parent_path);
+                    console.log('Items count:', data.items ? data.items.length : 'undefined');
+                    console.log('First few items:', data.items ? data.items.slice(0, 3) : 'undefined');
+
                     currentFolderPath = data.current_path;
                     currentPathElement.textContent = currentFolderPath;
                 } catch (e) {
@@ -2190,10 +2322,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 if (data.parent_path && data.parent_path !== data.current_path) {
                     const parentItem = document.createElement('div');
                     parentItem.className = 'file-item folder';
-                    parentItem.innerHTML = `
-                        <span class="file-icon">📁</span>
-                        <span class="file-name">.. (Parent Directory)</span>
-                    `;
+                    parentItem.innerHTML =
+                        '<span class="file-icon">📁</span>' +
+                        '<span class="file-name">.. (Parent Directory)</span>';
                     parentItem.onclick = () => openFileExplorer(data.parent_path);
                     fileList.appendChild(parentItem);
                 }
@@ -2204,12 +2335,11 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     itemElement.className = 'file-item' + (item.is_dir ? ' folder' : '');
                     
                     const icon = item.is_dir ? '📁' : '📄';
-                    const mp3Count = item.is_dir && item.mp3_count !== undefined ? ` (${item.mp3_count} MP3s)` : '';
+                    const mp3Count = item.is_dir && item.mp3_count !== undefined ? ' (' + item.mp3_count + ' MP3s)' : '';
                     
-                    itemElement.innerHTML = `
-                        <span class="file-icon">${icon}</span>
-                        <span class="file-name">${item.name}${mp3Count}</span>
-                    `;
+                    itemElement.innerHTML =
+                        '<span class="file-icon">' + icon + '</span>' +
+                        '<span class="file-name">' + item.name + mp3Count + '</span>';
                     
                     if (item.is_dir) {
                         itemElement.onclick = (e) => {
@@ -2226,7 +2356,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 }
                 
             } catch (error) {
-                fileList.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                fileList.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
                 console.error('File explorer error:', error);
             }
         }
@@ -2342,28 +2472,191 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         function updateTrackNumbers(albumId) {
-            const fileList = document.getElementById(`filelist-${albumId}`);
+            const fileList = document.getElementById('filelist-' + albumId);
             if (fileList) {
                 const items = fileList.querySelectorAll('li');
                 items.forEach((item, index) => {
                     const trackNumber = item.querySelector('.track-number');
                     if (trackNumber) {
-                        trackNumber.textContent = `${index + 1}.`;
+                        trackNumber.textContent = (index + 1) + '.';
                     }
                 });
             }
         }
 
+        function shuffleTracks(albumId) {
+            // Get the file list element
+            const fileListId = albumId.startsWith('folder_') ? 'filelist-' + albumId : 'filelist-' + albumId;
+            const fileList = document.getElementById(fileListId);
+
+            if (!fileList) {
+                console.error('File list not found for album:', albumId);
+                return;
+            }
+
+            // Get all track items
+            const items = Array.from(fileList.querySelectorAll('.file-item'));
+
+            if (items.length < 2) {
+                return; // Nothing to shuffle
+            }
+
+            // Shuffle the items using Fisher-Yates algorithm
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+
+            // Clear the file list and re-add shuffled items
+            fileList.innerHTML = '';
+            items.forEach(item => {
+                fileList.appendChild(item);
+            });
+
+            // Update track numbers
+            const cleanAlbumId = albumId.replace('folder_', '');
+            updateTrackNumbers(cleanAlbumId);
+
+            // Save the new track order
+            saveTrackOrder(cleanAlbumId);
+
+            console.log('Shuffled tracks for album:', albumId);
+        }
+
+        function orderTracksByMetadata(albumId) {
+            // Get the file list element
+            const fileListId = albumId.startsWith('folder_') ? 'filelist-' + albumId : 'filelist-' + albumId;
+            const fileList = document.getElementById(fileListId);
+
+            if (!fileList) {
+                console.error('File list not found for album:', albumId);
+                return;
+            }
+
+            // Get all track items
+            const items = Array.from(fileList.querySelectorAll('.file-item'));
+
+            if (items.length < 2) {
+                return; // Nothing to sort
+            }
+
+            // Get filenames from the items
+            const filenames = items.map(item => item.dataset.filename);
+
+            // Call the API to get track metadata
+            fetch('/api/track_metadata', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    folder_path: currentFolderPath || '.',
+                    filenames: filenames
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error getting track metadata:', data.error);
+                    return;
+                }
+
+                // Sort items by actual track numbers from metadata
+                items.sort((a, b) => {
+                    const filenameA = a.dataset.filename;
+                    const filenameB = b.dataset.filename;
+
+                    const metadataA = data.metadata[filenameA] || { track_num: 999 };
+                    const metadataB = data.metadata[filenameB] || { track_num: 999 };
+
+                    const trackNumA = metadataA.track_num || 999;
+                    const trackNumB = metadataB.track_num || 999;
+
+                    if (trackNumA !== trackNumB) {
+                        return trackNumA - trackNumB;
+                    }
+
+                    // If track numbers are the same, sort by filename
+                    return filenameA.toLowerCase().localeCompare(filenameB.toLowerCase());
+                });
+
+                // Clear the file list and re-add sorted items
+                fileList.innerHTML = '';
+                items.forEach(item => {
+                    fileList.appendChild(item);
+                });
+
+                // Update display track numbers to show the new order
+                items.forEach((item, index) => {
+                    const trackNumberSpan = item.querySelector('.track-number');
+                    if (trackNumberSpan) {
+                        trackNumberSpan.textContent = (index + 1) + '.';
+                    }
+                });
+
+                // Update track numbers and save order
+                const cleanAlbumId = albumId.replace('folder_', '');
+                updateTrackNumbers(cleanAlbumId);
+                saveTrackOrder(cleanAlbumId);
+
+                console.log('Ordered tracks by metadata for album:', albumId);
+            })
+            .catch(error => {
+                console.error('Error calling track metadata API:', error);
+            });
+        }
+
+        function orderTracksAlphabetically(albumId) {
+            // Get the file list element
+            const fileListId = albumId.startsWith('folder_') ? 'filelist-' + albumId : 'filelist-' + albumId;
+            const fileList = document.getElementById(fileListId);
+
+            if (!fileList) {
+                console.error('File list not found for album:', albumId);
+                return;
+            }
+
+            // Get all track items
+            const items = Array.from(fileList.querySelectorAll('.file-item'));
+
+            if (items.length < 2) {
+                return; // Nothing to sort
+            }
+
+            // Sort alphabetically by filename
+            items.sort((a, b) => {
+                const nameA = a.dataset.filename.toLowerCase();
+                const nameB = b.dataset.filename.toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            // Clear the file list and re-add sorted items
+            fileList.innerHTML = '';
+            items.forEach(item => {
+                fileList.appendChild(item);
+            });
+
+            // Update track numbers
+            const cleanAlbumId = albumId.replace('folder_', '');
+            updateTrackNumbers(cleanAlbumId);
+
+            // Save the new track order
+            saveTrackOrder(cleanAlbumId);
+
+            console.log('Ordered tracks alphabetically for album:', albumId);
+        }
+
+
         // Store track orders for each album
         const trackOrders = {};
 
         function saveTrackOrder(albumId) {
-            const fileList = document.getElementById(`filelist-${albumId}`);
+            const fileList = document.getElementById('filelist-' + albumId);
             if (fileList) {
                 const items = fileList.querySelectorAll('li');
                 const order = Array.from(items).map(item => item.dataset.filename);
                 trackOrders[albumId] = order;
-                console.log(`Saved track order for ${albumId}:`, order);
+                console.log('Saved track order for ' + albumId + ':', order);
             }
         }
 
@@ -2373,22 +2666,22 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
         // Functions for custom album track selection
         function selectAllTracks(albumId) {
-            const checkboxes = document.querySelectorAll(`#filelist-${albumId} .track-checkbox`);
+            const checkboxes = document.querySelectorAll('#filelist-' + albumId + ' .track-checkbox');
             checkboxes.forEach(checkbox => {
                 checkbox.checked = true;
             });
         }
 
         function selectNoTracks(albumId) {
-            const checkboxes = document.querySelectorAll(`#filelist-${albumId} .track-checkbox`);
+            const checkboxes = document.querySelectorAll('#filelist-' + albumId + ' .track-checkbox');
             checkboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });
         }
 
         function getCustomAlbumData(albumId) {
-            const titleInput = document.getElementById(`custom-title-${albumId}`);
-            const checkboxes = document.querySelectorAll(`#filelist-${albumId} .track-checkbox:checked`);
+            const titleInput = document.getElementById('custom-title-' + albumId);
+            const checkboxes = document.querySelectorAll('#filelist-' + albumId + ' .track-checkbox:checked');
             
             return {
                 title: titleInput ? titleInput.value.trim() || 'Custom Album' : 'Custom Album',
@@ -2401,7 +2694,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 console.log('Enhancing album with MusicBrainz:', albumName, albumFiles);
                 
                 const albumId = albumName.replace(/[^a-zA-Z0-9]/g, '_');
-                const infoDiv = document.getElementById(`mb-info-${albumId}`);
+                const infoDiv = document.getElementById('mb-info-' + albumId);
                 
                 if (!infoDiv) {
                     console.error('Info div not found for album:', albumId);
@@ -2426,43 +2719,42 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 
                 if (result.success) {
                     // Display MusicBrainz information
-                    let html = `
-                        <h4>📀 MusicBrainz: ${result.release_info.artist} - ${result.release_info.title}</h4>
-                        <div class="mb-stats">
-                            Match: ${result.matched_count}/${result.total_files} tracks (${result.match_percentage.toFixed(1)}%)
-                        </div>
-                    `;
+                    let html =
+                        '<h4>📀 MusicBrainz: ' + result.release_info.artist + ' - ' + result.release_info.title + '</h4>' +
+                        '<div class="mb-stats">' +
+                            'Match: ' + result.matched_count + '/' + result.total_files + ' tracks (' + result.match_percentage.toFixed(1) + '%)' +
+                        '</div>';
                     
                     if (result.matched_tracks.length > 0) {
                         html += '<div><strong>Matched tracks:</strong></div>';
                         result.matched_tracks.forEach(track => {
-                            html += `<div class="mb-match">✓ ${track.track_number}. ${track.mb_title}</div>`;
+                            html += '<div class="mb-match">✓ ' + track.track_number + '. ' + track.mb_title + '</div>';
                         });
                     }
                     
                     if (result.unmatched_files.length > 0) {
                         html += '<div style="margin-top: 10px;"><strong>Unmatched files:</strong></div>';
                         result.unmatched_files.forEach(file => {
-                            html += `<div class="mb-mismatch">✗ ${file.local_title}</div>`;
+                            html += '<div class="mb-mismatch">✗ ' + file.local_title + '</div>';
                         });
                     }
                     
                     if (result.release_info.date) {
-                        html += `<div style="margin-top: 10px;"><strong>Release Date:</strong> ${result.release_info.date}</div>`;
+                        html += '<div style="margin-top: 10px;"><strong>Release Date:</strong> ' + result.release_info.date + '</div>';
                     }
                     
                     infoDiv.innerHTML = html;
                 } else {
-                    infoDiv.innerHTML = `<div class="mb-mismatch">❌ ${result.error}</div>`;
+                    infoDiv.innerHTML = '<div class="mb-mismatch">❌ ' + result.error + '</div>';
                 }
                 
             } catch (error) {
                 console.error('MusicBrainz enhancement error:', error);
                 const albumId = albumName.replace(/[^a-zA-Z0-9]/g, '_');
-                const infoDiv = document.getElementById(`mb-info-${albumId}`);
+                const infoDiv = document.getElementById('mb-info-' + albumId);
                 if (infoDiv) {
                     infoDiv.style.display = 'block';
-                    infoDiv.innerHTML = `<div class="mb-mismatch">❌ Error: ${error.message}</div>`;
+                    infoDiv.innerHTML = '<div class="mb-mismatch">❌ Error: ' + error.message + '</div>';
                 }
             }
         }
@@ -2470,41 +2762,39 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         async function shutdownApp() {
             try {
                 fetch('/api/shutdown', { method: 'POST' });
-                document.body.innerHTML = `
-                    <div style="
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        background: #ffffff;
-                        color: #000000;
-                        font-family: 'Roboto', sans-serif;
-                        text-align: center;
-                    ">
-                        <div>
-                            <h1>track gluer togetherer</h1>
-                            <p>closed</p>
-                        </div>
-                    </div>
-                `;
+                document.body.innerHTML =
+                    '<div style="' +
+                        'display: flex;' +
+                        'justify-content: center;' +
+                        'align-items: center;' +
+                        'height: 100vh;' +
+                        'background: #ffffff;' +
+                        'color: #000000;' +
+                        'font-family: Roboto, sans-serif;' +
+                        'text-align: center;' +
+                    '">' +
+                        '<div>' +
+                            '<h1>track gluer togetherer</h1>' +
+                            '<p>closed</p>' +
+                        '</div>' +
+                    '</div>';
             } catch (error) {
-                document.body.innerHTML = `
-                    <div style="
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        background: #ffffff;
-                        color: #000000;
-                        font-family: 'Roboto', sans-serif;
-                        text-align: center;
-                    ">
-                        <div>
-                            <h1>track gluer togetherer</h1>
-                            <p>closed</p>
-                        </div>
-                    </div>
-                `;
+                document.body.innerHTML =
+                    '<div style="' +
+                        'display: flex;' +
+                        'justify-content: center;' +
+                        'align-items: center;' +
+                        'height: 100vh;' +
+                        'background: #ffffff;' +
+                        'color: #000000;' +
+                        'font-family: Roboto, sans-serif;' +
+                        'text-align: center;' +
+                    '">' +
+                        '<div>' +
+                            '<h1>track gluer togetherer</h1>' +
+                            '<p>app already closed</p>' +
+                        '</div>' +
+                    '</div>';
             }
         }
     </script>
@@ -2691,8 +2981,9 @@ def musicbrainz_group_files(mp3_files):
                                         position = int(track.get('position', 0))
                                         mb_tracks[title] = position
 
-                            # Match ONLY files from this candidate group to this release
+                            # Match files from this candidate group to this release with relaxed matching
                             release_files = []
+                            # First pass: exact matches
                             for mp3_file in candidate_files:
                                 if mp3_file in matched_files:
                                     continue
@@ -2701,7 +2992,7 @@ def musicbrainz_group_files(mp3_files):
                                     audio = eyed3.load(str(mp3_file))
                                     if audio and audio.tag and audio.tag.title:
                                         local_title = audio.tag.title.lower().strip()
-                                        clean_title = local_title.replace(' - mixed', '').replace('-mixed', '')
+                                        clean_title = local_title.replace(' - mixed', '').replace('-mixed', '').replace(' (mixed)', '').replace('(mixed)', '')
 
                                         track_position = None
                                         if clean_title in mb_tracks:
@@ -2715,6 +3006,24 @@ def musicbrainz_group_files(mp3_files):
                                 except (ValueError, KeyError, AttributeError) as e:
                                     logger.debug(f"Could not match track {mp3_file}: {e}")
                                     continue
+
+                            # Second pass: fuzzy matching for remaining files from same album
+                            remaining_candidates = [f for f in candidate_files if f not in matched_files]
+                            if remaining_candidates and release_files:  # Only do fuzzy matching if we have some exact matches
+                                print(f"  🔄 Trying fuzzy matching for {len(remaining_candidates)} remaining tracks from same album", flush=True)
+                                for mp3_file in remaining_candidates:
+                                    try:
+                                        audio = eyed3.load(str(mp3_file))
+                                        if audio and audio.tag:
+                                            # If it's from the same album, include it with a reasonable position
+                                            max_position = max(pos for _, pos in release_files) if release_files else 0
+                                            new_position = max_position + 1
+                                            release_files.append((mp3_file, new_position))
+                                            matched_files.add(mp3_file)
+                                            print(f"    ➕ Added {mp3_file.name} from same album (position {new_position})", flush=True)
+                                    except Exception as e:
+                                        logger.debug(f"Could not process file {mp3_file}: {e}")
+                                        continue
 
                             if release_files:
                                 # Sort by MusicBrainz track position
@@ -3013,12 +3322,19 @@ def browse_folder():
         
         # Sort: directories first, then files, both alphabetically
         items.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
-        
-        return jsonify({
+
+        response_data = {
             'current_path': folder_path,
             'parent_path': parent_dir if parent_dir != folder_path else None,
             'items': items
-        })
+        }
+
+        print(f"Returning response with {len(items)} items")
+        print(f"Current path: {response_data['current_path']}")
+        print(f"Parent path: {response_data['parent_path']}")
+        print(f"First few items: {items[:3]}")
+
+        return jsonify(response_data)
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -3182,6 +3498,77 @@ def health_check():
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+
+@app.route('/api/track_metadata', methods=['POST'])
+@validate_request(rate_limit=True)
+def get_track_metadata():
+    """Get track metadata for sorting"""
+    try:
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+
+        data = request.get_json()
+        folder_path = data.get('folder_path', '.')
+        filenames = data.get('filenames', [])
+
+        if not filenames:
+            return jsonify({'error': 'No filenames provided'}), 400
+
+        # Get track metadata for each file
+        track_metadata = {}
+        base_path = Path(folder_path)
+
+        for filename in filenames:
+            file_path = base_path / filename
+            try:
+                if file_path.exists() and file_path.suffix.lower() == '.mp3':
+                    import eyed3
+                    audiofile = eyed3.load(str(file_path))
+                    if audiofile and audiofile.tag:
+                        # Get track number (handle tuple format like (3, 10) or just int like 3)
+                        track_num = audiofile.tag.track_num
+                        if isinstance(track_num, tuple) and len(track_num) > 0:
+                            track_num = track_num[0]
+                        elif track_num is None:
+                            track_num = 999  # Put tracks without numbers at the end
+
+                        track_metadata[filename] = {
+                            'track_num': track_num,
+                            'title': audiofile.tag.title or filename,
+                            'artist': audiofile.tag.artist or 'Unknown',
+                            'album': audiofile.tag.album or 'Unknown'
+                        }
+                    else:
+                        # Fallback for files without metadata
+                        track_metadata[filename] = {
+                            'track_num': 999,
+                            'title': filename,
+                            'artist': 'Unknown',
+                            'album': 'Unknown'
+                        }
+                else:
+                    # File doesn't exist or isn't MP3
+                    track_metadata[filename] = {
+                        'track_num': 999,
+                        'title': filename,
+                        'artist': 'Unknown',
+                        'album': 'Unknown'
+                    }
+            except Exception as e:
+                logger.warning(f"Error reading metadata for {filename}: {e}")
+                track_metadata[filename] = {
+                    'track_num': 999,
+                    'title': filename,
+                    'artist': 'Unknown',
+                    'album': 'Unknown'
+                }
+
+        return jsonify({'metadata': track_metadata})
+
+    except Exception as e:
+        logger.error(f"Error getting track metadata: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/cache/clear', methods=['POST'])
 @validate_request(rate_limit=True)
