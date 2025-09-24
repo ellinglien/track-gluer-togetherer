@@ -1549,6 +1549,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     <input type="text" id="folderPath" placeholder="folder path" value=".">
                     <button class="btn" onclick="browseFolder()">browse</button>
                     <button class="btn" onclick="scanFolder()">scan</button>
+                    <button class="btn" onclick="musicbrainzResort()" style="background: #333; color: white;">musicbrainz resort</button>
                 </div>
 
             </div>
@@ -1658,6 +1659,46 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 }
             } catch (error) {
                 showAlert('Failed to scan folder: ' + error.message, 'error');
+            }
+        }
+
+        async function musicbrainzResort() {
+            const folderPath = document.getElementById('folderPath').value;
+            console.log('MusicBrainz resort for folder:', folderPath);
+
+            // Show loading animation
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('previewContent').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div>musicbrainz grouping...</div>
+                    <div class="loader">
+                        <div class="loader-dots">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/musicbrainz_resort', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_path: folderPath })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayPreview(data);
+                    document.getElementById('step2').classList.add('active');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to resort with MusicBrainz: ' + error.message, 'error');
             }
         }
 
@@ -2496,9 +2537,9 @@ def musicbrainz_group_files(mp3_files):
                                         position = int(track.get('position', 0))
                                         mb_tracks[title] = position
 
-                            # Match ALL files (not just from this group) to this release
+                            # Match ONLY files from this candidate group to this release
                             release_files = []
-                            for mp3_file in mp3_files:
+                            for mp3_file in candidate_files:
                                 if mp3_file in matched_files:
                                     continue
 
@@ -2577,6 +2618,69 @@ def musicbrainz_group_files(mp3_files):
             print(f"📝 Added {len(individual_tracks)} individual tracks", flush=True)
 
     return final_groups
+
+
+@app.route('/api/musicbrainz_resort', methods=['POST'])
+@validate_request(require_json=True, rate_limit=True)
+def musicbrainz_resort():
+    """Scan folder and group files using MusicBrainz-first approach"""
+    try:
+        data = request.get_json()
+        folder_path = data.get('folder_path', '.')
+        print(f"🎵 MusicBrainz resort for folder: {folder_path}", flush=True)
+
+        if not Path(folder_path).exists():
+            return jsonify({'error': 'Folder does not exist'}), 400
+
+        # Get all MP3 files
+        mp3_files = list(Path(folder_path).glob("*.mp3"))
+        print(f"🎵 Found {len(mp3_files)} MP3 files for MusicBrainz grouping", flush=True)
+
+        if not mp3_files:
+            return jsonify({
+                'session_id': str(uuid.uuid4()),
+                'folder_path': folder_path,
+                'preview': {'loose_files': {'count': 0, 'groupings': {}}, 'existing_folders': [], 'total_albums': 0}
+            })
+
+        # MUSICBRAINZ-FIRST GROUPING
+        grouped_albums = musicbrainz_group_files(mp3_files)
+        print(f"🎵 MusicBrainz grouping resulted in {len(grouped_albums)} album(s)", flush=True)
+
+        # Build preview response similar to scan_folder
+        preview = {
+            'loose_files': {
+                'count': len(mp3_files),
+                'groupings': {}
+            },
+            'existing_folders': [],
+            'total_albums': len(grouped_albums)
+        }
+
+        # Convert MusicBrainz groups to preview format
+        for album_name, files in grouped_albums.items():
+            if len(files) >= 2:  # Multi-track albums
+                preview['loose_files']['groupings'][album_name] = {
+                    'type': 'album',
+                    'count': len(files),
+                    'files': [{'name': f.name, 'path': str(f)} for f in files]
+                }
+                print(f"  📀 {album_name}: {len(files)} tracks", flush=True)
+
+        # Create session
+        session_id = str(uuid.uuid4())
+        merger = WebAlbumMerger(folder_path)
+        session_manager.create_session(session_id, {'merger': merger, 'folder_path': folder_path})
+
+        return jsonify({
+            'session_id': session_id,
+            'folder_path': folder_path,
+            'preview': preview
+        })
+
+    except Exception as e:
+        logger.error(f"Error in musicbrainz_resort: {e}", exc_info=True)
+        return jsonify({'error': f'Failed to resort with MusicBrainz: {str(e)}'}), 500
 
 
 @app.route('/api/start_merge', methods=['POST'])
