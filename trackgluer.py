@@ -1502,36 +1502,107 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             align-items: center;
         }
 
-        /* Loading Animation */
+        /* Brutalist Loading Animation */
         .loader {
-            display: inline-block;
-            margin-left: 10px;
-        }
-
-        .loader-dots {
-            display: inline-block;
+            display: block;
+            margin: 30px auto;
             position: relative;
-            width: 40px;
-            height: 10px;
         }
 
-        .loader-dots div {
+        .brutalist-loader {
+            width: 200px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+            border: 4px solid #000;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .brutalist-bars {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 8px;
+        }
+
+        .bar {
+            width: 12px;
+            background: #000;
+            animation: brutalist-pulse 2.4s infinite;
+            transform-origin: bottom;
+        }
+
+        .bar:nth-child(1) { animation-delay: 0s; }
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.4s; }
+        .bar:nth-child(4) { animation-delay: 0.6s; }
+        .bar:nth-child(5) { animation-delay: 0.8s; }
+        .bar:nth-child(6) { animation-delay: 1.0s; }
+        .bar:nth-child(7) { animation-delay: 1.2s; }
+        .bar:nth-child(8) { animation-delay: 1.4s; }
+        .bar:nth-child(9) { animation-delay: 1.6s; }
+        .bar:nth-child(10) { animation-delay: 1.8s; }
+
+        .brutalist-glitch {
             position: absolute;
             top: 0;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #000000;
-            animation: loader-pulse 1.2s infinite;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #000;
+            animation: glitch-slide 3s infinite linear;
         }
 
-        .loader-dots div:nth-child(1) { left: 8px; animation-delay: 0s; }
-        .loader-dots div:nth-child(2) { left: 17px; animation-delay: 0.2s; }
-        .loader-dots div:nth-child(3) { left: 26px; animation-delay: 0.4s; }
+        .brutalist-text {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 2px;
+            animation: text-flicker 1.8s infinite;
+        }
 
-        @keyframes loader-pulse {
-            0%, 80%, 100% { opacity: 0.3; }
-            40% { opacity: 1; }
+        @keyframes brutalist-pulse {
+            0%, 100% { height: 20px; }
+            50% { height: 80px; }
+        }
+
+        @keyframes glitch-slide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+        }
+
+        @keyframes text-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* MusicBrainz specific loader */
+        .musicbrainz-loader {
+            border: 6px solid #000;
+            background: #333;
+        }
+
+        .musicbrainz-loader .bar {
+            background: #fff;
+        }
+
+        .musicbrainz-loader .brutalist-glitch {
+            background: #fff;
+        }
+
+        .musicbrainz-loader .brutalist-text {
+            color: #fff;
         }
 
     </style>
@@ -1632,12 +1703,22 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             document.getElementById('step2').classList.add('active');
             document.getElementById('previewContent').innerHTML = `
                 <div style="text-align: center; padding: 40px;">
-                    <div>scanning folder</div>
                     <div class="loader">
-                        <div class="loader-dots">
-                            <div></div>
-                            <div></div>
-                            <div></div>
+                        <div class="brutalist-text">SCANNING FOLDER</div>
+                        <div class="brutalist-loader">
+                            <div class="brutalist-glitch"></div>
+                            <div class="brutalist-bars">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1674,12 +1755,22 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             document.getElementById('step2').classList.add('active');
             document.getElementById('previewContent').innerHTML = `
                 <div style="text-align: center; padding: 40px;">
-                    <div>musicbrainz grouping...</div>
                     <div class="loader">
-                        <div class="loader-dots">
-                            <div></div>
-                            <div></div>
-                            <div></div>
+                        <div class="brutalist-text">MUSICBRAINZ GROUPING</div>
+                        <div class="brutalist-loader musicbrainz-loader">
+                            <div class="brutalist-glitch"></div>
+                            <div class="brutalist-bars">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2664,18 +2755,25 @@ def musicbrainz_resort():
                 'groupings': {}
             },
             'existing_folders': [],
-            'total_albums': len(grouped_albums)
+            'total_albums': 0  # Will be counted accurately below
         }
 
-        # Convert MusicBrainz groups to preview format
+        # Convert MusicBrainz groups to preview format - filter incomplete albums
+        filtered_albums = 0
         for album_name, files in grouped_albums.items():
-            if len(files) >= 2:  # Multi-track albums
+            if len(files) >= 3:  # Only albums with 3+ tracks (filter incomplete albums)
                 preview['loose_files']['groupings'][album_name] = {
                     'type': 'album',
                     'count': len(files),
                     'files': [{'name': f.name, 'path': str(f)} for f in files]
                 }
+                filtered_albums += 1
                 print(f"  📀 {album_name}: {len(files)} tracks", flush=True)
+            else:
+                print(f"  ⏭️ Filtered out {album_name}: only {len(files)} tracks (incomplete)", flush=True)
+
+        preview['total_albums'] = filtered_albums
+        print(f"🔍 MusicBrainz scan: {len(grouped_albums)} raw albums → {filtered_albums} complete albums (3+ tracks)", flush=True)
 
         # Create session
         session_id = str(uuid.uuid4())
