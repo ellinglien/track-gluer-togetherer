@@ -1692,7 +1692,12 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 const data = await response.json();
 
                 if (response.ok) {
-                    displayPreview(data);
+                    console.log('=== MUSICBRAINZ RESPONSE DEBUG ===');
+                    console.log('Full response:', data);
+                    console.log('Preview object:', data.preview);
+                    console.log('Loose files:', data.preview?.loose_files);
+                    console.log('Groupings:', data.preview?.loose_files?.groupings);
+                    displayPreview(data.preview);
                     document.getElementById('step2').classList.add('active');
                 } else {
                     showAlert(data.error, 'error');
@@ -1728,7 +1733,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 </div>`;
             }
 
-            if (preview.loose_files && preview.loose_files.groupings && Object.keys(preview.loose_files.groupings).length > 0) {
+            if (preview.loose_files && preview.loose_files.groupings && Object.keys(preview.loose_files.groupings || {}).length > 0) {
                 html += '<h3>auto-detected:</h3>';
                 for (const [albumName, group] of Object.entries(preview.loose_files.groupings)) {
                     const albumId = albumName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -1769,7 +1774,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                     <input type="checkbox" id="album_${albumId}" checked class="album-checkbox">
                                     <span class="album-title">${albumName}</span>
                                     <span class="album-type ${group.type || 'album'}">${group.type || 'album'}</span>
-                                    <button class="btn btn-small" onclick="enhanceWithMusicBrainz('${albumName}', ${JSON.stringify(group.files || []).replace(/"/g, '&quot;')})" title="Enhance with MusicBrainz data">MusicBrainz</button>
+                                    <!-- Enhance button temporarily disabled to fix JS error -->
+                                    <!-- <button class="btn btn-small" onclick="enhanceWithMusicBrainz('${albumName}', ${JSON.stringify(group.files || []).replace(/"/g, '&quot;')})" title="Enhance with MusicBrainz data">MusicBrainz</button> -->
                                 </div>
                                 <p><strong>${group.count || 0} tracks</strong></p>
                                 <ul class="file-list" id="filelist-${albumId}">
@@ -1798,7 +1804,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                 <input type="checkbox" id="folder_${folderId}" checked class="album-checkbox">
                                 <span class="album-title">${folder.name}</span>
                                 <span class="album-type ${folder.type || 'album'}">${folder.type || 'album'}</span>
-                                <button class="btn btn-small" onclick="enhanceWithMusicBrainz('${folder.name}', ${JSON.stringify(folder.files || []).replace(/"/g, '&quot;')})" title="Enhance with MusicBrainz data">MusicBrainz</button>
+                                <!-- Enhance button temporarily disabled to fix JS error -->
+                                <!-- <button class="btn btn-small" onclick="enhanceWithMusicBrainz('${folder.name}', ${JSON.stringify(folder.files || []).replace(/"/g, '&quot;')})" title="Enhance with MusicBrainz data">MusicBrainz</button> -->
                             </div>
                             <p><strong>${folder.count || 0} tracks</strong></p>
                             <ul class="file-list" id="filelist-${folderId}">
