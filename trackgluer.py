@@ -1548,8 +1548,11 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 <div class="folder-input">
                     <input type="text" id="folderPath" placeholder="folder path" value=".">
                     <button class="btn" onclick="browseFolder()">browse</button>
-                    <button class="btn" onclick="scanFolder()">scan</button>
-                    <button class="btn" onclick="musicbrainzResort()" style="background: #333; color: white;">musicbrainz resort</button>
+                </div>
+
+                <div class="scan-buttons" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn" onclick="scanFolder()">regular scan</button>
+                    <button class="btn" onclick="musicbrainzResort()" style="background: #333; color: white;">musicbrainz scan</button>
                 </div>
 
             </div>
