@@ -1624,6 +1624,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 <div class="scan-buttons" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
                     <button class="btn" onclick="scanFolder()">regular scan</button>
                     <button class="btn" onclick="musicbrainzResort()" style="background: #333; color: white;">musicbrainz scan</button>
+                    <button class="btn" onclick="glueEmAll()" style="background: #000; color: white; border: 2px solid #000;">glue em all</button>
                 </div>
 
             </div>
@@ -1798,6 +1799,58 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 }
             } catch (error) {
                 showAlert('Failed to resort with MusicBrainz: ' + error.message, 'error');
+            }
+        }
+
+        async function glueEmAll() {
+            const folderPath = document.getElementById('folderPath').value;
+            console.log('Glue Em All for folder:', folderPath);
+
+            // Show loading animation
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('previewContent').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loader">
+                        <div class="brutalist-text">LOADING ALL FILES</div>
+                        <div class="brutalist-loader">
+                            <div class="brutalist-glitch"></div>
+                            <div class="brutalist-bars">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/glue_em_all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_path: folderPath })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log('=== GLUE EM ALL RESPONSE ===');
+                    console.log('Full response:', data);
+                    displayPreview(data.preview);
+                    document.getElementById('step2').classList.add('active');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to load all files: ' + error.message, 'error');
             }
         }
 
@@ -2789,6 +2842,68 @@ def musicbrainz_resort():
     except Exception as e:
         logger.error(f"Error in musicbrainz_resort: {e}", exc_info=True)
         return jsonify({'error': f'Failed to resort with MusicBrainz: {str(e)}'}), 500
+
+
+@app.route('/api/glue_em_all', methods=['POST'])
+@validate_request(require_json=True, rate_limit=True)
+def glue_em_all():
+    """Load all MP3 files in folder as one big compilation for merging"""
+    try:
+        data = request.get_json()
+        folder_path = data.get('folder_path', '.')
+        print(f"🎵 Glue Em All for folder: {folder_path}", flush=True)
+
+        if not Path(folder_path).exists():
+            return jsonify({'error': 'Folder does not exist'}), 400
+
+        # Get all MP3 files
+        mp3_files = list(Path(folder_path).glob("*.mp3"))
+        print(f"🎵 Found {len(mp3_files)} MP3 files for merging", flush=True)
+
+        if not mp3_files:
+            return jsonify({
+                'session_id': str(uuid.uuid4()),
+                'folder_path': folder_path,
+                'preview': {'loose_files': {'count': 0, 'groupings': {}}, 'existing_folders': [], 'total_albums': 0}
+            })
+
+        # Sort files alphabetically by name for consistent ordering
+        mp3_files.sort(key=lambda f: f.name.lower())
+
+        # Create one big "All Files" album
+        album_name = f"All Files ({len(mp3_files)} tracks)"
+
+        preview = {
+            'loose_files': {
+                'count': len(mp3_files),
+                'groupings': {
+                    album_name: {
+                        'type': 'mix',
+                        'count': len(mp3_files),
+                        'files': [{'name': f.name, 'path': str(f)} for f in mp3_files]
+                    }
+                }
+            },
+            'existing_folders': [],
+            'total_albums': 1
+        }
+
+        print(f"📀 Created compilation: {album_name}", flush=True)
+
+        # Create session
+        session_id = str(uuid.uuid4())
+        merger = WebAlbumMerger(folder_path)
+        session_manager.create_session(session_id, {'merger': merger, 'folder_path': folder_path})
+
+        return jsonify({
+            'session_id': session_id,
+            'folder_path': folder_path,
+            'preview': preview
+        })
+
+    except Exception as e:
+        logger.error(f"Error in glue_em_all: {e}", exc_info=True)
+        return jsonify({'error': f'Failed to load all files: {str(e)}'}), 500
 
 
 @app.route('/api/start_merge', methods=['POST'])
