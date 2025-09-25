@@ -3154,10 +3154,15 @@ def musicbrainz_resort():
         preview['total_albums'] = filtered_albums
         print(f"🔍 MusicBrainz scan: {len(grouped_albums)} raw albums → {filtered_albums} complete albums (3+ tracks)", flush=True)
 
-        # Create session
+        # Create session with grouped albums data
         session_id = str(uuid.uuid4())
         merger = WebAlbumMerger(folder_path)
-        session_manager.create_session(session_id, {'merger': merger, 'folder_path': folder_path})
+        session_manager.create_session(session_id, {
+            'merger': merger,
+            'folder_path': folder_path,
+            'grouped_albums': grouped_albums,  # Include the MusicBrainz grouped albums
+            'preview': preview  # Include the preview data
+        })
 
         return jsonify({
             'session_id': session_id,

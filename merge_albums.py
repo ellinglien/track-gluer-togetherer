@@ -749,16 +749,38 @@ class AlbumMerger:
         return album_folders
 
     def get_track_metadata(self, mp3_file: Path) -> Dict[str, str]:
-        """Extract metadata using ffprobe"""
+        """Extract metadata using eyed3"""
         try:
-            cmd = [
-                'ffprobe', '-v', 'quiet', '-print_format', 'json',
-                '-show_entries', 'format_tags', str(mp3_file)
-            ]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            data = json.loads(result.stdout)
-            return data.get('format', {}).get('tags', {})
-        except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError):
+            import eyed3
+            audiofile = eyed3.load(str(mp3_file))
+            if audiofile and audiofile.tag:
+                # Create a metadata dict with consistent key names
+                metadata = {}
+                if audiofile.tag.artist:
+                    metadata['artist'] = audiofile.tag.artist
+                    metadata['ARTIST'] = audiofile.tag.artist
+                if audiofile.tag.album:
+                    metadata['album'] = audiofile.tag.album
+                    metadata['ALBUM'] = audiofile.tag.album
+                if audiofile.tag.album_artist:
+                    metadata['album_artist'] = audiofile.tag.album_artist
+                    metadata['ALBUM_ARTIST'] = audiofile.tag.album_artist
+                if audiofile.tag.title:
+                    metadata['title'] = audiofile.tag.title
+                    metadata['TITLE'] = audiofile.tag.title
+                if audiofile.tag.track_num:
+                    track_num = audiofile.tag.track_num
+                    if isinstance(track_num, tuple):
+                        track_num = track_num[0]
+                    metadata['track'] = str(track_num)
+                    metadata['TRACK'] = str(track_num)
+                if audiofile.tag.genre and audiofile.tag.genre.name:
+                    metadata['genre'] = audiofile.tag.genre.name
+                    metadata['GENRE'] = audiofile.tag.genre.name
+                return metadata
+            return {}
+        except Exception as e:
+            print(f"Warning: Could not read metadata from {mp3_file.name}: {e}")
             return {}
 
     def extract_track_number(self, filename: str, metadata: Dict[str, str]) -> int:
