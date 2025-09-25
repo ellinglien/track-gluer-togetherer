@@ -3673,6 +3673,30 @@ if __name__ == '__main__':
     print("🎵 Album Merger Web Interface")
     print("=" * 40)
 
+    # Check for existing instances and kill them
+    import subprocess
+    try:
+        # Kill any existing trackgluer processes (except this one)
+        current_pid = os.getpid()
+        result = subprocess.run(['pgrep', '-f', 'trackgluer.py'], capture_output=True, text=True)
+        if result.returncode == 0:
+            existing_pids = [int(pid) for pid in result.stdout.strip().split('\n') if pid.strip()]
+            existing_pids = [pid for pid in existing_pids if pid != current_pid]  # Don't kill ourselves
+
+            if existing_pids:
+                print(f"🔍 Found {len(existing_pids)} existing instance(s), closing them...")
+                for pid in existing_pids:
+                    try:
+                        os.kill(pid, 15)  # SIGTERM first
+                        time.sleep(1)
+                        os.kill(pid, 9)   # SIGKILL if still running
+                    except ProcessLookupError:
+                        pass  # Process already dead
+                time.sleep(2)  # Wait for cleanup
+                print("✅ Closed existing instances")
+    except Exception as e:
+        print(f"⚠️ Could not check for existing instances: {e}")
+
     # Find an available port starting from the configured port
     try:
         PORT = find_available_port(config.PORT)
