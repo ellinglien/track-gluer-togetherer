@@ -508,16 +508,28 @@ def validate_request(require_json: bool = False, rate_limit: bool = True):
         return wrapper
     return decorator
 
-def merge_grouped_files(files, album_name, output_folder, session_id, progress_base, delete_originals=False, custom_track_order=None):
+def merge_grouped_files(files, album_name, output_folder, session_id, progress_base, delete_originals=False, custom_track_order=None, custom_artist=None):
     """Merge a group of files that have been grouped together"""
     global merge_progress
-    
+
     try:
         from pathlib import Path
         import tempfile
         import shutil
         import subprocess
         import re
+
+        # Safety check for empty files list
+        if not files:
+            print(f"❌ ERROR: merge_grouped_files called with empty files list for album '{album_name}'")
+            merge_progress[session_id].update({
+                'status': 'error',
+                'progress': progress_base,
+                'message': f'No files provided for album: {album_name}'
+            })
+            return
+
+        print(f"🎵 merge_grouped_files called with {len(files)} files for album '{album_name}'")
         
         # Create output directory if it doesn't exist
         output_dir = Path(output_folder) if output_folder else Path.cwd() / "Merged Albums"
@@ -629,10 +641,38 @@ def merge_grouped_files(files, album_name, output_folder, session_id, progress_b
                 # Use custom album name (from user input) or fallback to safe_album_name
                 final_album_name = album_name if album_name != safe_album_name else metadata.get('album', album_name)
                 
-                # Set metadata for custom compilation
-                merged_audiofile.tag.artist = "Various Artists"  # Always use Various Artists for custom albums
-                merged_audiofile.tag.album = final_album_name  # Use the custom title from user
-                merged_audiofile.tag.album_artist = "Various Artists"  # Set album artist to Various Artists
+                # Use custom artist if provided, otherwise determine automatically
+                if custom_artist:
+                    final_artist = custom_artist
+                    final_album_artist = custom_artist
+                    print(f"🎵 Using custom artist: {custom_artist}")
+                else:
+                    # Determine if this is a compilation or single-artist album
+                    artists = set()
+                    for file in files:
+                        try:
+                            temp_audio = eyed3.load(str(file))
+                            if temp_audio and temp_audio.tag and temp_audio.tag.artist:
+                                artists.add(temp_audio.tag.artist)
+                        except:
+                            pass
+
+                    # Use "Various Artists" only if there are multiple different artists
+                    if len(artists) > 1:
+                        final_artist = "Various Artists"
+                        final_album_artist = "Various Artists"
+                    elif len(artists) == 1:
+                        final_artist = list(artists)[0]
+                        final_album_artist = list(artists)[0]
+                    else:
+                        # Fallback to metadata from first file
+                        final_artist = metadata.get('artist', 'Unknown Artist')
+                        final_album_artist = metadata.get('album_artist', final_artist)
+
+                # Set metadata based on analysis or custom input
+                merged_audiofile.tag.artist = final_artist
+                merged_audiofile.tag.album = final_album_name
+                merged_audiofile.tag.album_artist = final_album_artist
                 merged_audiofile.tag.title = f"{final_album_name} (Full Album)"
                 merged_audiofile.tag.track_num = (1, 1)  # Track 1 of 1
                 
@@ -655,7 +695,7 @@ def merge_grouped_files(files, album_name, output_folder, session_id, progress_b
                 
                 # Save the metadata
                 merged_audiofile.tag.save()
-                print(f"✅ Custom album metadata added: Various Artists - {final_album_name}")
+                print(f"✅ Album metadata added: {final_artist} - {final_album_name}")
                 
         except Exception as e:
             print(f"Warning: Could not add metadata to merged file: {e}")
@@ -688,12 +728,18 @@ def merge_grouped_files(files, album_name, output_folder, session_id, progress_b
         return False
 
 
-def merge_with_progress(session_id, output_folder=None, delete_originals=False, selected_albums=None, custom_track_orders=None, custom_album_titles=None, custom_album_files=None):
+def merge_with_progress(session_id, output_folder=None, delete_originals=False, selected_albums=None, custom_track_orders=None, custom_album_titles=None, custom_album_files=None, custom_album_artists=None):
     """Merge albums with progress tracking"""
     global merge_progress, active_sessions
 
     try:
         print(f"🔧 merge_with_progress called for session: {session_id}")
+        print(f"🔧 Parameters - output_folder: {output_folder}, delete_originals: {delete_originals}")
+        print(f"🔧 Parameters - selected_albums: {selected_albums}")
+        print(f"🔧 Parameters - custom_track_orders: {custom_track_orders}")
+        print(f"🔧 Parameters - custom_album_titles: {custom_album_titles}")
+        print(f"🔧 Parameters - custom_album_files: {custom_album_files}")
+        print(f"🔧 Parameters - custom_album_artists: {custom_album_artists}")
         merge_progress[session_id] = {'status': 'starting', 'progress': 0, 'message': 'Initializing...'}
         print(f"📊 Progress initialized for session: {session_id}")
 
@@ -732,6 +778,8 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
         individual_tracks = []
         
         for album_name, files in grouped_albums.items():
+            print(f"🔍 VIRTUAL ALBUM DEBUG - {album_name}: {len(files)} files")
+            print(f"🔍 VIRTUAL ALBUM DEBUG - Files: {[f.name if hasattr(f, 'name') else str(f) for f in files]}")
             if len(files) >= 2:  # Multi-track albums
                 virtual_album = VirtualAlbum(album_name, files)
                 existing_folders.append(virtual_album)
@@ -860,13 +908,21 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
                 # Check if this is a custom album with custom title and selected files
                 final_album_name = album_name
                 final_files = album_folder.album_files
+                print(f"🔍 MERGE DEBUG - Album: {album_name}")
+                print(f"🔍 MERGE DEBUG - album_folder.album_files: {len(final_files)} files")
+                print(f"🔍 MERGE DEBUG - Files: {[f.name if hasattr(f, 'name') else str(f) for f in final_files]}")
                 
                 if custom_album_titles and album_id in custom_album_titles:
                     final_album_name = custom_album_titles[album_id]
                     print(f"🎵 Using custom album title: {final_album_name}")
-                
-                if custom_album_files and album_id in custom_album_files:
-                    # Filter files to only include selected ones
+
+                custom_artist = None
+                if custom_album_artists and album_id in custom_album_artists:
+                    custom_artist = custom_album_artists[album_id]
+                    print(f"🎵 Using custom artist: {custom_artist}")
+
+                if custom_album_files and album_id in custom_album_files and custom_album_files[album_id]:
+                    # Filter files to only include selected ones (only if the list is not empty)
                     selected_filenames = custom_album_files[album_id]
                     file_map = {f.name: f for f in album_folder.album_files}
                     final_files = [file_map[fname] for fname in selected_filenames if fname in file_map]
@@ -874,13 +930,14 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
                 
                 # Use simplified merge process for grouped files
                 merge_grouped_files(
-                    final_files, 
-                    final_album_name, 
-                    output_folder, 
-                    session_id, 
+                    final_files,
+                    final_album_name,
+                    output_folder,
+                    session_id,
                     progress,
                     delete_originals=delete_originals,
-                    custom_track_order=custom_order
+                    custom_track_order=custom_order,
+                    custom_artist=custom_artist
                 )
             else:
                 # Real folder - use existing merge method with delete_originals flag
@@ -915,7 +972,8 @@ def merge_all_with_progress(session_id, output_folder=None, delete_originals=Fal
             merge_progress[session_id] = {'status': 'error', 'progress': 0, 'message': 'Session not found'}
             return
 
-        merger = active_sessions[session_id]
+        session_data = active_sessions[session_id]
+        merger = session_data['merger']
 
         # Get all MP3 files
         all_mp3s = list(merger.downloads_folder.glob("*.mp3"))
@@ -1788,6 +1846,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     console.log('Preview object:', data.preview);
                     console.log('Loose files:', data.preview?.loose_files);
                     console.log('Groupings:', data.preview?.loose_files?.groupings);
+                    currentSession = data.session_id; // Store session ID for merge
                     displayPreview(data.preview);
                     document.getElementById('step2').classList.add('active');
                 } else {
@@ -1838,6 +1897,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 if (response.ok) {
                     console.log('=== GLUE EM ALL RESPONSE ===');
                     console.log('Full response:', data);
+                    currentSession = data.session_id; // Store session ID for merge
                     displayPreview(data.preview);
                     document.getElementById('step2').classList.add('active');
                 } else {
@@ -1875,7 +1935,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         html += '<div style="margin-left: 10px;">';
                         html += '<div style="margin-bottom: 8px;"><strong>' + labelText + '</strong></div>';
                         html += '<input type="text" id="custom-title-' + albumId + '" placeholder="Enter album name..." style="width: 300px; padding: 5px; margin-bottom: 5px;">';
-                        html += '<div style="font-size: 0.9em; color: #666;">(' + (group.count || 0) + ' tracks - Various Artists)</div>';
+                        html += '<input type="text" id="custom-artist-' + albumId + '" placeholder="Enter artist name..." style="width: 300px; padding: 5px; margin-bottom: 5px;">';
+                        html += '<div style="font-size: 0.9em; color: #666;">(' + (group.count || 0) + ' tracks)</div>';
                         html += '</div>';
                     } else {
                         // Regular albums
@@ -2026,7 +2087,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         html += '<div class="album-group custom-album">';
                         html += '<div class="album-header">';
                         html += '<input type="checkbox" id="album_' + fixedAlbumId + '" checked class="album-checkbox">';
-                        html += '<input type="text" id="custom-title-' + fixedAlbumId + '" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Album">';
+                        html += '<input type="text" id="custom-title-' + fixedAlbumId + '" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Album" style="margin-bottom: 5px;">';
+                        html += '<input type="text" id="custom-artist-' + fixedAlbumId + '" class="custom-artist-input" placeholder="Enter artist name..." style="margin-bottom: 5px;">';
                         html += '<span class="album-type custom">custom</span>';
                         html += '<button class="btn btn-small" onclick="selectAllTracks(\'' + fixedAlbumId.replace(/\'/g, "\\\\'") + '\')" title="Select all tracks">All</button>';
                         html += '<button class="btn btn-small" onclick="selectNoTracks(\'' + fixedAlbumId.replace(/\'/g, "\\\\'") + '\')" title="Deselect all tracks">None</button>';
@@ -2057,7 +2119,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                             html += '<div class="album-group custom-album">';
                             html += '<div class="album-header">';
                             html += '<input type="checkbox" id="album_' + albumId + '" checked class="album-checkbox">';
-                            html += '<input type="text" id="custom-title-' + albumId + '" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Compilation">';
+                            html += '<input type="text" id="custom-title-' + albumId + '" class="custom-title-input" placeholder="Enter custom album title..." value="Custom Compilation" style="margin-bottom: 5px;">';
+                            html += '<input type="text" id="custom-artist-' + albumId + '" class="custom-artist-input" placeholder="Enter artist name..." style="margin-bottom: 5px;">';
                             html += '<span class="album-type mix">mix</span>';
                             html += '<button class="btn btn-small" onclick="selectAllTracks(\'' + albumId.replace(/\'/g, "\\\\'") + '\')" title="Select all tracks">All</button>';
                             html += '<button class="btn btn-small" onclick="selectNoTracks(\'' + albumId.replace(/\'/g, "\\\\'") + '\')" title="Deselect all tracks">None</button>';
@@ -2145,10 +2208,11 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             const outputPath = document.getElementById('outputPath').value || '.';
             const deleteOriginals = document.getElementById('deleteOriginals').checked;
 
-            // Get selected albums and their custom track orders
+            // Get selected albums and their custom data
             const selectedAlbums = [];
             const customTrackOrders = {};
             const customAlbumTitles = {};
+            const customAlbumArtists = {};
             const customAlbumFiles = {};
             
             document.querySelectorAll('.album-checkbox:checked').forEach(checkbox => {
@@ -2169,8 +2233,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     if (customTitleInput) {
                         const customData = getCustomAlbumData(albumId);
                         customAlbumTitles[checkbox.id] = customData.title;
+                        customAlbumArtists[checkbox.id] = customData.artist;
                         customAlbumFiles[checkbox.id] = customData.selectedFiles;
-                        console.log('Custom album: ' + customData.title + ' with ' + customData.selectedFiles.length + ' tracks');
+                        console.log('Custom album: ' + customData.artist + ' - ' + customData.title + ' with ' + customData.selectedFiles.length + ' tracks');
                         console.log('Custom album ID: ' + checkbox.id + ', Album ID: ' + albumId);
                     }
                 }
@@ -2178,6 +2243,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             
             console.log('Final selected albums:', selectedAlbums);
             console.log('Final custom titles:', customAlbumTitles);
+            console.log('Final custom artists:', customAlbumArtists);
             console.log('Final custom files:', customAlbumFiles);
             
             // Debug custom files in detail
@@ -2197,6 +2263,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         selected_albums: selectedAlbums,
                         custom_track_orders: customTrackOrders,
                         custom_album_titles: customAlbumTitles,
+                        custom_album_artists: customAlbumArtists,
                         custom_album_files: customAlbumFiles
                     })
                 });
@@ -2698,10 +2765,12 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
         function getCustomAlbumData(albumId) {
             const titleInput = document.getElementById('custom-title-' + albumId);
+            const artistInput = document.getElementById('custom-artist-' + albumId);
             const checkboxes = document.querySelectorAll('#filelist-' + albumId + ' .track-checkbox:checked');
-            
+
             return {
                 title: titleInput ? titleInput.value.trim() || 'Custom Album' : 'Custom Album',
+                artist: artistInput ? artistInput.value.trim() || 'Various Artists' : 'Various Artists',
                 selectedFiles: Array.from(checkboxes).map(cb => cb.dataset.file)
             };
         }
@@ -3137,10 +3206,12 @@ def musicbrainz_resort():
             'total_albums': 0  # Will be counted accurately below
         }
 
-        # Convert MusicBrainz groups to preview format - filter incomplete albums
+        # Filter both grouped_albums and preview to only include complete albums (3+ tracks)
+        filtered_grouped_albums = {}
         filtered_albums = 0
         for album_name, files in grouped_albums.items():
             if len(files) >= 3:  # Only albums with 3+ tracks (filter incomplete albums)
+                filtered_grouped_albums[album_name] = files
                 preview['loose_files']['groupings'][album_name] = {
                     'type': 'album',
                     'count': len(files),
@@ -3150,6 +3221,9 @@ def musicbrainz_resort():
                 print(f"  📀 {album_name}: {len(files)} tracks", flush=True)
             else:
                 print(f"  ⏭️ Filtered out {album_name}: only {len(files)} tracks (incomplete)", flush=True)
+
+        # Update grouped_albums to the filtered version
+        grouped_albums = filtered_grouped_albums
 
         preview['total_albums'] = filtered_albums
         print(f"🔍 MusicBrainz scan: {len(grouped_albums)} raw albums → {filtered_albums} complete albums (3+ tracks)", flush=True)
@@ -3221,10 +3295,22 @@ def glue_em_all():
 
         print(f"📀 Created compilation: {album_name}", flush=True)
 
-        # Create session
+        # Create session with grouped_albums data
         session_id = str(uuid.uuid4())
         merger = WebAlbumMerger(folder_path)
-        session_manager.create_session(session_id, {'merger': merger, 'folder_path': folder_path})
+
+        # Create grouped_albums structure expected by merge_with_progress
+        grouped_albums = {
+            album_name: mp3_files  # mp3_files is already a list of Path objects
+        }
+
+        session_data = {
+            'merger': merger,
+            'folder_path': folder_path,
+            'grouped_albums': grouped_albums,
+            'preview': preview
+        }
+        session_manager.create_session(session_id, session_data)
 
         return jsonify({
             'session_id': session_id,
@@ -3250,16 +3336,21 @@ def start_merge():
         selected_albums = data.get('selected_albums', [])
         custom_track_orders = data.get('custom_track_orders', {})
         custom_album_titles = data.get('custom_album_titles', {})
+        custom_album_artists = data.get('custom_album_artists', {})
         custom_album_files = data.get('custom_album_files', {})
-        
+
         print(f"🔍 MERGE DEBUG - Selected albums: {selected_albums}")
         print(f"🔍 MERGE DEBUG - Custom titles: {custom_album_titles}")
+        print(f"🔍 MERGE DEBUG - Custom artists: {custom_album_artists}")
         print(f"🔍 MERGE DEBUG - Custom files: {custom_album_files}")
+        print(f"🔍 MERGE DEBUG - Session ID: {session_id}")
+        print(f"🔍 MERGE DEBUG - Available sessions: {list(active_sessions.keys())}")
+        print(f"🔍 MERGE DEBUG - Session data keys: {list(active_sessions[session_id].keys()) if session_id in active_sessions else 'SESSION NOT FOUND'}")
 
         if session_id not in active_sessions:
             return jsonify({'error': 'Invalid session'}), 400
 
-        merger = active_sessions[session_id]
+        session_data = active_sessions[session_id]
 
         # Start merging in background thread
         def merge_process():
@@ -3268,7 +3359,7 @@ def start_merge():
                 if merge_type == 'all':
                     merge_with_progress(session_id, output_path, delete_originals)
                 else:
-                    merge_with_progress(session_id, output_path, delete_originals, selected_albums, custom_track_orders, custom_album_titles, custom_album_files)
+                    merge_with_progress(session_id, output_path, delete_originals, selected_albums, custom_track_orders, custom_album_titles, custom_album_files, custom_album_artists)
                 print(f"✅ Merge process completed for session: {session_id}")
             except Exception as e:
                 print(f"❌ Merge process error for session {session_id}: {e}")
@@ -3533,6 +3624,9 @@ def get_track_metadata():
         folder_path = data.get('folder_path', '.')
         filenames = data.get('filenames', [])
 
+        print(f"🔍 METADATA DEBUG - Folder path: {folder_path}")
+        print(f"🔍 METADATA DEBUG - Filenames: {filenames}")
+
         if not filenames:
             return jsonify({'error': 'No filenames provided'}), 400
 
@@ -3560,6 +3654,7 @@ def get_track_metadata():
                             'artist': audiofile.tag.artist or 'Unknown',
                             'album': audiofile.tag.album or 'Unknown'
                         }
+                        print(f"🔍 METADATA DEBUG - {filename}: track={track_num}, title={audiofile.tag.title}")
                     else:
                         # Fallback for files without metadata
                         track_metadata[filename] = {
