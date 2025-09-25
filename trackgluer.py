@@ -3701,7 +3701,7 @@ if __name__ == '__main__':
         'host': '0.0.0.0',
         'port': PORT,  # Use the found available port
         'debug': debug_mode,
-        'use_reloader': debug_mode,
+        'use_reloader': False,  # Disable reloader to prevent multiple browser tabs
         'threaded': True
     }
 
