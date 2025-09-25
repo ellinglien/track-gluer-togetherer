@@ -112,11 +112,41 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Check if required packages are installed
-echo "🔍 Checking dependencies..."
+# Check if ffmpeg is installed
+echo "🔍 Checking for ffmpeg..."
+if ! command -v ffmpeg &> /dev/null; then
+    echo "❌ ffmpeg not found. Installing via Homebrew..."
+    # Check if Homebrew is installed
+    if ! command -v brew &> /dev/null; then
+        echo "❌ Homebrew not found. Please install Homebrew first:"
+        echo "   /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+        echo "   Then run the app again."
+        echo "Press any key to exit..."
+        read -n 1
+        exit 1
+    fi
+
+    echo "📦 Installing ffmpeg..."
+    brew install ffmpeg
+
+    if [ $? -eq 0 ]; then
+        echo "✅ ffmpeg installed successfully"
+    else
+        echo "❌ Failed to install ffmpeg. Please install it manually:"
+        echo "   brew install ffmpeg"
+        echo "Press any key to exit..."
+        read -n 1
+        exit 1
+    fi
+else
+    echo "✅ ffmpeg found: $(which ffmpeg)"
+fi
+
+# Check if required Python packages are installed
+echo "🔍 Checking Python dependencies..."
 python3 -c "import flask, eyed3, musicbrainzngs" 2>/dev/null
 if [ $? -ne 0 ]; then
-    echo "📦 Installing required packages..."
+    echo "📦 Installing required Python packages..."
     pip3 install flask eyed3 musicbrainzngs
 fi
 
