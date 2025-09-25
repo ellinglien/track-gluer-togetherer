@@ -138,18 +138,25 @@ class AlbumMerger:
         if not normalized:
             return album
 
-        # Try to preserve original case: if the normalized result is found in the original (case-insensitive),
-        # extract the corresponding portion from the original to preserve case
+        # For grouping consistency, we need to return a normalized form, but we want
+        # to preserve case where possible. We'll use title case as a reasonable middle ground
+        # that looks better than all lowercase but still groups properly.
+
+        # If the normalized result is just a cleaned version of the original,
+        # try to preserve the original case pattern
         original_lower = album.lower()
         if normalized in original_lower:
             start_pos = original_lower.find(normalized)
             if start_pos >= 0:
                 end_pos = start_pos + len(normalized)
-                return album[start_pos:end_pos]
+                preserved_case = album[start_pos:end_pos]
+                # Only use preserved case if it's reasonable (not all caps or all lowercase)
+                if not preserved_case.isupper() and not preserved_case.islower():
+                    return preserved_case
 
-        # If we can't preserve case exactly, return the original album name
-        # (this ensures "TOTO" stays "TOTO" instead of becoming "toto")
-        return album
+        # For consistency in grouping, apply title case to the normalized result
+        # This ensures "TOTO IV", "toto iv", and "Toto Iv" all become "Toto Iv" for grouping
+        return normalized.title()
 
         # Remove common prefixes that might vary
         prefixes_to_remove = [
