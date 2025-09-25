@@ -11,6 +11,7 @@ import time
 import sys
 import logging
 import secrets
+import socket
 from pathlib import Path
 from flask import Flask, render_template_string, request, jsonify
 from threading import Lock, Timer
@@ -53,6 +54,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.info(f"Application starting with config: PORT={config.PORT}, DEBUG={config.DEBUG}")
+
+# Utility function to find an available port
+def find_available_port(start_port: int = 9876, max_attempts: int = 100) -> int:
+    """Find an available port starting from start_port"""
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            # Try to bind to the port
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', port))
+                return port
+        except OSError:
+            # Port is in use, try the next one
+            continue
+
+    # If no port found in range, raise an exception
+    raise RuntimeError(f"Could not find available port in range {start_port}-{start_port + max_attempts - 1}")
 
 # Import our existing AlbumMerger class
 from merge_albums import AlbumMerger
@@ -3650,49 +3667,57 @@ def shutdown():
         logger.error(f"Shutdown error: {e}")
         return jsonify({'error': str(e)}), 500
 
-# Use configuration for port
-PORT = config.PORT
-
-def open_browser():
-    """Open browser after delay"""
-    time.sleep(2)
-    webbrowser.open(f'http://localhost:{PORT}')
+# PORT will be determined at runtime to avoid conflicts
 
 if __name__ == '__main__':
     print("🎵 Album Merger Web Interface")
     print("=" * 40)
+
+    # Find an available port starting from the configured port
+    try:
+        PORT = find_available_port(config.PORT)
+        if PORT != config.PORT:
+            print(f"⚠️  Port {config.PORT} was busy, using port {PORT} instead")
+        else:
+            print(f"✅ Using configured port {PORT}")
+    except RuntimeError as e:
+        print(f"❌ {e}")
+        print("Trying a random port...")
+        PORT = find_available_port(8000)  # Fallback to common port range
+        print(f"✅ Using available port {PORT}")
+
     print(f"Starting server on http://localhost:{PORT}")
     print("Press Ctrl+C to stop")
-    
+
     # Check if running in Electron
     import sys
     is_electron = '--electron' in sys.argv
-    
+
     # Start the Flask server with debug mode if not in Electron
     debug_mode = not is_electron
-    
+
     # Configure server options
     server_options = {
         'host': '0.0.0.0',
-        'port': PORT,  # Use the global PORT variable
+        'port': PORT,  # Use the found available port
         'debug': debug_mode,
         'use_reloader': debug_mode,
         'threaded': True
     }
-    
+
     # Always run in the main thread
-    print(f"Server starting on http://127.0.0.1:{PORT}")
-    
+    print(f"🌐 Server starting on http://127.0.0.1:{PORT}")
+
     # Open browser after a short delay if not in Electron mode
     if not is_electron:
         def open_browser():
             time.sleep(1)
             webbrowser.open(f'http://127.0.0.1:{PORT}')
         threading.Thread(target=open_browser, daemon=True).start()
-    
+
     # Run the server
     try:
         app.run(**server_options)
     except Exception as e:
-        print(f"Error starting server: {e}")
+        print(f"❌ Error starting server: {e}")
         raise
