@@ -268,10 +268,8 @@ class WebAlbumMerger(AlbumMerger):
 
     def preview_groupings(self):
         """Get a preview of how files will be grouped without processing"""
-        print("🔍 DEBUG: preview_groupings called")
         # Get loose MP3 files
         root_mp3s = self.get_root_mp3_files()
-        print(f"🔍 DEBUG: Found {len(root_mp3s)} root mp3 files")
 
         # Get pre-organized folders
         existing_folders = self.get_album_folders_with_mp3s()
@@ -290,7 +288,6 @@ class WebAlbumMerger(AlbumMerger):
             grouped_albums = self.group_mp3s_by_album_traditional(root_mp3s)
             individual_tracks = []
             
-            print(f"🔍 Traditional grouping found {len(grouped_albums)} album groups:")
             for album_key, files in grouped_albums.items():
                 print(f"  - {album_key}: {len(files)} tracks ({[f.name for f in files]})")
                 
@@ -305,7 +302,6 @@ class WebAlbumMerger(AlbumMerger):
             
             # Add individual tracks as a custom album collection
             if individual_tracks:
-                print(f"🔍 Collected {len(individual_tracks)} individual tracks for custom album")
                 preview['loose_files']['groupings']['🎵 Individual Tracks'] = {
                     'files': [f.name for f in individual_tracks],
                     'count': len(individual_tracks),
@@ -329,7 +325,6 @@ class WebAlbumMerger(AlbumMerger):
         displayable_albums = len(preview['loose_files']['groupings']) + len(preview['existing_folders'])
         preview['total_albums'] = displayable_albums
         
-        print(f"🔍 FINAL PREVIEW SUMMARY:")
         print(f"  - Total albums: {preview['total_albums']}")
         print(f"  - Loose file groupings: {len(preview['loose_files']['groupings'])}")
         print(f"  - Existing folders: {len(preview['existing_folders'])}")
@@ -733,13 +728,6 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
     global merge_progress, active_sessions
 
     try:
-        print(f"🔧 merge_with_progress called for session: {session_id}")
-        print(f"🔧 Parameters - output_folder: {output_folder}, delete_originals: {delete_originals}")
-        print(f"🔧 Parameters - selected_albums: {selected_albums}")
-        print(f"🔧 Parameters - custom_track_orders: {custom_track_orders}")
-        print(f"🔧 Parameters - custom_album_titles: {custom_album_titles}")
-        print(f"🔧 Parameters - custom_album_files: {custom_album_files}")
-        print(f"🔧 Parameters - custom_album_artists: {custom_album_artists}")
         merge_progress[session_id] = {'status': 'starting', 'progress': 0, 'message': 'Initializing...'}
         print(f"📊 Progress initialized for session: {session_id}")
 
@@ -778,8 +766,6 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
         individual_tracks = []
         
         for album_name, files in grouped_albums.items():
-            print(f"🔍 VIRTUAL ALBUM DEBUG - {album_name}: {len(files)} files")
-            print(f"🔍 VIRTUAL ALBUM DEBUG - Files: {[f.name if hasattr(f, 'name') else str(f) for f in files]}")
             if len(files) >= 2:  # Multi-track albums
                 virtual_album = VirtualAlbum(album_name, files)
                 existing_folders.append(virtual_album)
@@ -838,8 +824,6 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
         
         # Filter albums based on selected_albums if provided
         if selected_albums:
-            print(f"🔍 Filtering albums based on selection: {selected_albums}")
-            print(f"🔍 Available albums to match:")
             for album in all_albums:
                 print(f"   - '{album['name']}' (type: {album['type']})")
             
@@ -857,7 +841,6 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
                     clean_name = re.sub(r'[^a-zA-Z0-9]', '_', album['name'])
                     album_id = f"folder_{clean_name}"
                 
-                print(f"🔍 Generated ID for '{album['name']}': '{album_id}'")
                 
                 # Check if this album is selected
                 if album_id in selected_albums:
@@ -865,10 +848,6 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
                     print(f"✅ Selected album: {album['name']} (ID: {album_id})")
                 else:
                     print(f"⏭️  Skipping unselected album: {album['name']} (ID: {album_id})")
-                    # Also check for partial matches to help debug
-                    for selected_id in selected_albums:
-                        if album['name'].lower() in selected_id.lower() or selected_id.lower() in album['name'].lower():
-                            print(f"   🔍 Potential match found: '{selected_id}' vs '{album_id}'")
             
             all_albums = filtered_albums
             print(f"📊 Processing {len(filtered_albums)} selected albums out of {len(all_albums) + len(filtered_albums)} total")
@@ -908,9 +887,6 @@ def merge_with_progress(session_id, output_folder=None, delete_originals=False, 
                 # Check if this is a custom album with custom title and selected files
                 final_album_name = album_name
                 final_files = album_folder.album_files
-                print(f"🔍 MERGE DEBUG - Album: {album_name}")
-                print(f"🔍 MERGE DEBUG - album_folder.album_files: {len(final_files)} files")
-                print(f"🔍 MERGE DEBUG - Files: {[f.name if hasattr(f, 'name') else str(f) for f in final_files]}")
                 
                 if custom_album_titles and album_id in custom_album_titles:
                     final_album_name = custom_album_titles[album_id]
@@ -1841,11 +1817,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 const data = await response.json();
 
                 if (response.ok) {
-                    console.log('=== MUSICBRAINZ RESPONSE DEBUG ===');
-                    console.log('Full response:', data);
-                    console.log('Preview object:', data.preview);
-                    console.log('Loose files:', data.preview?.loose_files);
-                    console.log('Groupings:', data.preview?.loose_files?.groupings);
                     currentSession = data.session_id; // Store session ID for merge
                     displayPreview(data.preview);
                     document.getElementById('step2').classList.add('active');
@@ -1909,10 +1880,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         function displayPreview(preview) {
-            console.log('=== PREVIEW DEBUG ===');
-            console.log('Total albums:', preview.total_albums);
-            console.log('Loose files count:', preview.loose_files?.count);
-            console.log('Groupings found:', Object.keys(preview.loose_files?.groupings || {}));
 
             const content = document.getElementById('previewContent');
 
@@ -2053,10 +2020,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
             /*
             [Previous complex code commented out for now]
-            console.log('=== PREVIEW DEBUG ===');
-            console.log('Total albums:', preview.total_albums);
-            console.log('Loose files count:', preview.loose_files?.count);
-            console.log('Groupings found:', Object.keys(preview.loose_files?.groupings || {}));
 
             // Log each grouping
             if (preview.loose_files?.groupings) {
@@ -2937,7 +2900,6 @@ def scan_folder():
         # Collect individual tracks
         individual_tracks = []
         
-        print(f"🔍 Processing {len(albums)} album groups:", flush=True)
         for album_name, files in albums.items():
             print(f"  - {album_name}: {len(files)} tracks", flush=True)
             
@@ -3002,7 +2964,6 @@ def scan_folder():
 
 def musicbrainz_group_files(mp3_files):
     """Pure MusicBrainz-first grouping function"""
-    print("🔍 Starting MusicBrainz lookup for all files...", flush=True)
 
     import eyed3
     import musicbrainzngs
@@ -3028,7 +2989,6 @@ def musicbrainz_group_files(mp3_files):
             logger.debug(f"Could not process MP3 file {mp3_file}: {e}")
             continue
 
-    print(f"🔍 Found {len(album_candidates)} unique artist/album combinations", flush=True)
 
     # Try MusicBrainz for each combination
     final_groups = {}
@@ -3041,7 +3001,6 @@ def musicbrainz_group_files(mp3_files):
             break
 
         artist, album = album_key.split("|||")
-        print(f"🔍 Looking up: {artist} - {album}", flush=True)
 
         try:
             # Search MusicBrainz with timeout
@@ -3226,7 +3185,6 @@ def musicbrainz_resort():
         grouped_albums = filtered_grouped_albums
 
         preview['total_albums'] = filtered_albums
-        print(f"🔍 MusicBrainz scan: {len(grouped_albums)} raw albums → {filtered_albums} complete albums (3+ tracks)", flush=True)
 
         # Create session with grouped albums data
         session_id = str(uuid.uuid4())
@@ -3339,13 +3297,6 @@ def start_merge():
         custom_album_artists = data.get('custom_album_artists', {})
         custom_album_files = data.get('custom_album_files', {})
 
-        print(f"🔍 MERGE DEBUG - Selected albums: {selected_albums}")
-        print(f"🔍 MERGE DEBUG - Custom titles: {custom_album_titles}")
-        print(f"🔍 MERGE DEBUG - Custom artists: {custom_album_artists}")
-        print(f"🔍 MERGE DEBUG - Custom files: {custom_album_files}")
-        print(f"🔍 MERGE DEBUG - Session ID: {session_id}")
-        print(f"🔍 MERGE DEBUG - Available sessions: {list(active_sessions.keys())}")
-        print(f"🔍 MERGE DEBUG - Session data keys: {list(active_sessions[session_id].keys()) if session_id in active_sessions else 'SESSION NOT FOUND'}")
 
         if session_id not in active_sessions:
             return jsonify({'error': 'Invalid session'}), 400
@@ -3624,8 +3575,6 @@ def get_track_metadata():
         folder_path = data.get('folder_path', '.')
         filenames = data.get('filenames', [])
 
-        print(f"🔍 METADATA DEBUG - Folder path: {folder_path}")
-        print(f"🔍 METADATA DEBUG - Filenames: {filenames}")
 
         if not filenames:
             return jsonify({'error': 'No filenames provided'}), 400
@@ -3654,7 +3603,6 @@ def get_track_metadata():
                             'artist': audiofile.tag.artist or 'Unknown',
                             'album': audiofile.tag.album or 'Unknown'
                         }
-                        print(f"🔍 METADATA DEBUG - {filename}: track={track_num}, title={audiofile.tag.title}")
                     else:
                         # Fallback for files without metadata
                         track_metadata[filename] = {
@@ -3784,7 +3732,6 @@ if __name__ == '__main__':
             existing_pids = [pid for pid in existing_pids if pid != current_pid]  # Don't kill ourselves
 
             if existing_pids:
-                print(f"🔍 Found {len(existing_pids)} existing instance(s), closing them...")
                 for pid in existing_pids:
                     try:
                         os.kill(pid, 15)  # SIGTERM first

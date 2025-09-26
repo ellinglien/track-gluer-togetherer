@@ -247,7 +247,7 @@ class AlbumMerger:
         Detect when a single release has been split across multiple album groups
         Uses MusicBrainz to identify complete releases
         """
-        print("🔍 Checking for split releases using MusicBrainz...")
+        print("Checking for split releases using MusicBrainz...")
 
         potential_merges = {}
         processed_albums = set()
@@ -276,7 +276,7 @@ class AlbumMerger:
                 if not release_info:
                     continue
 
-                print(f"📀 Found MusicBrainz release: {release_info['title']} ({release_info['track_count']} tracks)")
+                print(f"Found MusicBrainz release: {release_info['title']} ({release_info['track_count']} tracks)")
 
                 # Check if we have tracks from this release split across multiple groups
                 mb_track_titles = {track['title'].lower().strip() for track in release_info['tracks']}
@@ -309,7 +309,7 @@ class AlbumMerger:
                     if match_percentage >= 0.3:  # 30% threshold
                         matching_tracks.extend(other_files)
                         matched_album_keys.append(other_album_key)
-                        print(f"  📎 Merging album group: {other_album_key} ({album_matches}/{len(other_files)} tracks match)")
+                        print(f"  Merging album group: {other_album_key} ({album_matches}/{len(other_files)} tracks match)")
 
                 # If we found multiple groups that should be merged
                 if len(matched_album_keys) > 1:
@@ -321,7 +321,7 @@ class AlbumMerger:
                     for key in matched_album_keys:
                         processed_albums.add(key)
 
-                    print(f"✅ Merged {len(matched_album_keys)} album groups into: {merge_key}")
+                    print(f"Merged {len(matched_album_keys)} album groups into: {merge_key}")
 
             except Exception as e:
                 print(f"Error processing album {album_key}: {e}")
@@ -339,7 +339,7 @@ class AlbumMerger:
                 final_groups[album_key] = files
 
         if potential_merges:
-            print(f"🎯 Split release detection complete. Merged {len(potential_merges)} releases.")
+            print(f"Split release detection complete. Merged {len(potential_merges)} releases.")
 
         return final_groups
 
@@ -348,18 +348,18 @@ class AlbumMerger:
         Group MP3s using MusicBrainz as the primary method, fallback to metadata
         This prioritizes official release data over potentially inconsistent metadata
         """
-        print("🎵 Using MusicBrainz-first grouping strategy...")
-        print(f"🎵 Processing {len(mp3_files)} files")
+        print("Using MusicBrainz-first grouping strategy...")
+        print(f"Processing {len(mp3_files)} files")
 
         # Start with traditional grouping as a baseline
-        print("📝 First, getting traditional grouping as baseline...")
+        print("First, getting traditional grouping as baseline...")
         traditional_groups = self.group_mp3s_by_album_traditional(mp3_files)
         
         # Try to enhance groups with MusicBrainz data
         enhanced_groups = {}
         processed_files = set()
         
-        print(f"🔍 Attempting to enhance {len(traditional_groups)} groups with MusicBrainz data...")
+        print(f"Attempting to enhance {len(traditional_groups)} groups with MusicBrainz data...")
         
         for traditional_key, files in traditional_groups.items():
             if len(files) < 2:  # Skip single tracks
@@ -376,11 +376,11 @@ class AlbumMerger:
                     album = audiofile.tag.album or "Unknown"
                     
                     if artist != "Unknown" and album != "Unknown":
-                        print(f"🔍 Looking up: {artist} - {album}")
+                        print(f"Looking up: {artist} - {album}")
                         release_info = self.lookup_musicbrainz_release_info(artist, album)
                         
                         if release_info:
-                            print(f"📀 Found MusicBrainz release: {release_info['title']} ({release_info['track_count']} tracks)")
+                            print(f"Found MusicBrainz release: {release_info['title']} ({release_info['track_count']} tracks)")
                             
                             # Check if our files match this release
                             mb_track_titles = {track['title'].lower().strip() for track in release_info['tracks']}
@@ -405,10 +405,10 @@ class AlbumMerger:
                                 mb_key = f"{release_info['artist']} - {release_info['title']}"
                                 enhanced_groups[mb_key] = files
                                 processed_files.update(files)
-                                print(f"✅ Enhanced group with MusicBrainz title: {mb_key}")
+                                print(f"Enhanced group with MusicBrainz title: {mb_key}")
                                 continue
                         
-                        print(f"❌ No suitable MusicBrainz data found for: {artist} - {album}")
+                        print(f"No suitable MusicBrainz data found for: {artist} - {album}")
                 
             except Exception as e:
                 print(f"Error processing group {traditional_key}: {e}")
@@ -420,13 +420,13 @@ class AlbumMerger:
         # Ensure all files are accounted for
         missing_files = [f for f in mp3_files if f not in processed_files]
         if missing_files:
-            print(f"⚠️  Found {len(missing_files)} unprocessed files, adding to Unknown group")
+            print(f"Found {len(missing_files)} unprocessed files, adding to Unknown group")
             unknown_key = "Unknown Artist - Unknown Album"
             if unknown_key not in enhanced_groups:
                 enhanced_groups[unknown_key] = []
             enhanced_groups[unknown_key].extend(missing_files)
 
-        print(f"🎯 Final result: {len(enhanced_groups)} album groups")
+        print(f"Final result: {len(enhanced_groups)} album groups")
         return enhanced_groups
 
     def enhance_album_with_musicbrainz(self, mp3_files: List[Path], album_name: str = None) -> Dict[str, any]:
@@ -451,7 +451,7 @@ class AlbumMerger:
             if artist == "Unknown" or album == "Unknown":
                 return {"success": False, "error": "Missing artist or album information"}
             
-            print(f"🔍 Looking up MusicBrainz data for: {artist} - {album}")
+            print(f"Looking up MusicBrainz data for: {artist} - {album}")
             
             # Get MusicBrainz release info
             release_info = self.lookup_musicbrainz_release_info(artist, album)
@@ -459,7 +459,7 @@ class AlbumMerger:
             if not release_info:
                 return {"success": False, "error": f"No MusicBrainz data found for '{artist} - {album}'"}
             
-            print(f"📀 Found MusicBrainz release: {release_info['title']} ({release_info['track_count']} tracks)")
+            print(f"Found MusicBrainz release: {release_info['title']} ({release_info['track_count']} tracks)")
             
             # Match local files to MusicBrainz tracks
             mb_track_titles = {track['title'].lower().strip(): track for track in release_info['tracks']}
@@ -525,7 +525,7 @@ class AlbumMerger:
 
     def group_mp3s_by_album_traditional(self, mp3_files: List[Path]) -> Dict[str, List[Path]]:
         """Traditional grouping method (renamed from original)"""
-        print("📝 Using traditional metadata grouping...")
+        print("Using traditional metadata grouping...")
         return self.group_mp3s_by_album(mp3_files)
 
     def group_mp3s_by_album(self, mp3_files: List[Path]) -> Dict[str, List[Path]]:
@@ -543,17 +543,6 @@ class AlbumMerger:
                          metadata.get('artist') or metadata.get('ARTIST') or 'Unknown Artist')
                 track_artist = metadata.get('artist') or metadata.get('ARTIST') or 'Unknown Artist'
                 
-                # Ensure consistent album artist for the same album
-                if album.lower() == 'i put a spell on you':
-                    artist = 'Nina Simone'
-                
-                # Additional Nina Simone album fixes
-                if 'nina simone' in artist.lower():
-                    artist = 'Nina Simone'  # Normalize capitalization
-                
-                # Debug logging for Nina Simone albums
-                if 'nina simone' in artist.lower() or 'nina simone' in album.lower():
-                    print(f"DEBUG: Nina Simone track - Album: '{album}', Artist: '{artist}', Track Artist: '{track_artist}'")
 
                 # Check if this is likely a compilation or mix
                 is_compilation = self.is_likely_compilation(album, artist, track_artist, metadata)
@@ -566,10 +555,6 @@ class AlbumMerger:
                     normalized_artist = self.normalize_artist_name(artist)
                     normalized_album = self.normalize_album_name(album)
                     album_key = f"{normalized_artist} - {normalized_album}"
-                
-                # Debug logging for Nina Simone albums
-                if 'nina simone' in artist.lower() or 'nina simone' in album.lower():
-                    print(f"DEBUG: Nina Simone album key: '{album_key}' (compilation: {is_compilation})")
 
                 if album_key not in albums:
                     albums[album_key] = []
@@ -845,7 +830,7 @@ class AlbumMerger:
         album = album_info.get('album', '').strip()
 
         if not artist or not album or artist.lower() == 'unknown artist' or album.lower() == 'unknown album':
-            print("❌ Missing artist/album info, skipping MusicBrainz lookup")
+            print("Missing artist/album info, skipping MusicBrainz lookup")
             return mp3_files
 
         # Get track titles for lookup
@@ -858,7 +843,7 @@ class AlbumMerger:
         musicbrainz_order = self.lookup_musicbrainz_track_order(artist, album, track_titles)
 
         if musicbrainz_order:
-            print("🎵 Applying MusicBrainz track ordering...")
+            print("Applying MusicBrainz track ordering...")
             # Update track numbers based on MusicBrainz data
             enhanced_mp3_files = []
             for mp3_file, metadata, original_track_num in mp3_files:
@@ -877,7 +862,7 @@ class AlbumMerger:
             enhanced_mp3_files.sort(key=lambda x: x[2])
             return enhanced_mp3_files
         else:
-            print("⚠️  MusicBrainz lookup failed, using original track order")
+            print("MusicBrainz lookup failed, using original track order")
             return mp3_files
 
     def lookup_musicbrainz_release_info(self, artist: str, album: str) -> Optional[Dict]:
@@ -886,7 +871,7 @@ class AlbumMerger:
         This helps identify complete releases that might be split across metadata
         """
         try:
-            print(f"🔍 Looking up complete release info for '{artist} - {album}'...")
+            print(f"Looking up complete release info for '{artist} - {album}'...")
 
             # Search for the release
             result = musicbrainzngs.search_releases(
@@ -956,7 +941,7 @@ class AlbumMerger:
             return None
 
         except Exception as e:
-            print(f"❌ MusicBrainz release lookup failed: {e}")
+            print(f"MusicBrainz release lookup failed: {e}")
             return None
 
     def lookup_musicbrainz_track_order(self, artist: str, album: str, track_titles: List[str]) -> Optional[Dict[str, int]]:
@@ -965,7 +950,7 @@ class AlbumMerger:
         Returns a dict mapping track titles to their correct track numbers
         """
         try:
-            print(f"🔍 Looking up '{artist} - {album}' on MusicBrainz...")
+            print(f"Looking up '{artist} - {album}' on MusicBrainz...")
 
             # Search for the release
             result = musicbrainzngs.search_releases(
@@ -975,7 +960,7 @@ class AlbumMerger:
             )
 
             if not result.get('release-list'):
-                print(f"❌ No releases found for '{artist} - {album}'")
+                print(f"No releases found for '{artist} - {album}'")
                 return None
 
             # Try each release until we find a good match
@@ -1026,18 +1011,18 @@ class AlbumMerger:
                     # If we matched most tracks, consider it successful
                     match_percentage = matches / len(track_titles) if track_titles else 0
                     if match_percentage >= 0.7:  # 70% match threshold
-                        print(f"✅ Found track order from MusicBrainz ({matches}/{len(track_titles)} tracks matched)")
+                        print(f"Found track order from MusicBrainz ({matches}/{len(track_titles)} tracks matched)")
                         return track_order
 
                 except Exception as e:
                     print(f"Error processing release {release.get('id', 'unknown')}: {e}")
                     continue
 
-            print(f"❌ No suitable match found for '{artist} - {album}'")
+            print(f"No suitable match found for '{artist} - {album}'")
             return None
 
         except Exception as e:
-            print(f"❌ MusicBrainz lookup failed: {e}")
+            print(f"MusicBrainz lookup failed: {e}")
             return None
 
     def extract_album_info(self, mp3_files: List[Tuple[Path, Dict[str, str], int]]) -> Dict[str, str]:
@@ -1108,9 +1093,9 @@ class AlbumMerger:
                 contents = list(folder.iterdir())
                 if not contents:  # Folder is empty
                     folder.rmdir()
-                    print(f"  ✓ Removed empty folder: {folder.name}")
+                    print(f"  Removed empty folder: {folder.name}")
         except Exception as e:
-            print(f"  ✗ Failed to remove empty folder {folder.name}: {e}")
+            print(f"  Failed to remove empty folder {folder.name}: {e}")
 
     def cleanup_all_empty_folders(self):
         """Clean up all empty folders in downloads directory"""
@@ -1121,9 +1106,9 @@ class AlbumMerger:
                     contents = list(item.iterdir())
                     if not contents:  # Folder is empty
                         item.rmdir()
-                        print(f"  ✓ Removed empty folder: {item.name}")
+                        print(f"  Removed empty folder: {item.name}")
                 except Exception as e:
-                    print(f"  ✗ Failed to remove empty folder {item.name}: {e}")
+                    print(f"  Failed to remove empty folder {item.name}: {e}")
 
     def merge_album(self, album_folder: Path, output_folder: Optional[Path] = None, delete_originals: bool = False) -> bool:
         """Merge all MP3s in an album folder"""
@@ -1175,7 +1160,8 @@ class AlbumMerger:
         output_path = output_folder / output_filename
 
         # Create temporary directory for file list
-        temp_dir = Path("/tmp/album_merger")
+        import tempfile
+        temp_dir = Path(tempfile.gettempdir()) / "album_merger"
         temp_dir.mkdir(exist_ok=True)
 
         try:
@@ -1211,19 +1197,12 @@ class AlbumMerger:
             # Create tracklist file
             self.create_mix_tracklist_file(output_path, mix_info)
 
-            #             # Delete original MP3 files after successful merge
-            # Only delete originals if requested
             # Only delete originals if requested
             if delete_originals:
                 self.delete_source_files(mp3_files)
-                # Clean up empty folder after deleting files
                 self.cleanup_empty_folder(album_folder)
-                            #             self.delete_source_files(mp3_files)
-            # 
-            #             # Clean up empty folder after deleting files
-            #             self.cleanup_empty_folder(album_folder)
 
-            print(f"✓ Merged mix saved to: {output_path}")
+            print(f"Merged mix saved to: {output_path}")
             return True
 
         except Exception as e:
@@ -1260,7 +1239,8 @@ class AlbumMerger:
         output_path = output_folder / output_filename
 
         # Create temporary directory for file list
-        temp_dir = Path("/tmp/album_merger")
+        import tempfile
+        temp_dir = Path(tempfile.gettempdir()) / "album_merger"
         temp_dir.mkdir(exist_ok=True)
 
         try:
@@ -1292,18 +1272,12 @@ class AlbumMerger:
             # Add metadata and album art to merged file using ffmpeg
             self.add_metadata_to_merged_file(output_path, album_info, len(mp3_files), album_art_path)
 
-            # Delete original MP3 files after successful merge
-            # Only delete originals if requested
             # Only delete originals if requested
             if delete_originals:
                 self.delete_source_files(mp3_files)
-                # Clean up empty folder after deleting files
             self.cleanup_empty_folder(album_folder)
 
-            # Clean up empty folder after deleting files
-            self.cleanup_empty_folder(album_folder)
-
-            print(f"✓ Merged album saved to: {output_path}")
+            print(f"Merged album saved to: {output_path}")
             return True
 
         except Exception as e:
@@ -1334,13 +1308,13 @@ class AlbumMerger:
                 result = subprocess.run(cmd, capture_output=True, text=True)
 
                 if result.returncode == 0 and album_art_path.exists():
-                    print(f"✓ Extracted album art from: {mp3_file.name}")
+                    print(f"Extracted album art from: {mp3_file.name}")
                     return album_art_path
 
             except Exception as e:
                 continue
 
-        print("⚠ No album art found in tracks")
+        print("No album art found in tracks")
         return None
 
     def add_metadata_to_merged_file(self, output_path: Path, album_info: Dict[str, str], track_count: int, album_art_path: Optional[Path] = None):
@@ -1380,9 +1354,9 @@ class AlbumMerger:
                 # Replace original with temp file
                 temp_output.replace(output_path)
                 if album_art_path:
-                    print(f"✓ Metadata and album art added to merged file")
+                    print("Metadata and album art added to merged file")
                 else:
-                    print(f"✓ Metadata added to merged file")
+                    print("Metadata added to merged file")
             else:
                 print(f"Warning: Could not add metadata: {result.stderr}")
                 if temp_output.exists():
@@ -1433,9 +1407,9 @@ class AlbumMerger:
                 # Replace original with temp file
                 temp_output.replace(output_path)
                 if album_art_path:
-                    print(f"✓ Mix metadata and album art added to merged file")
+                    print("Mix metadata and album art added to merged file")
                 else:
-                    print(f"✓ Mix metadata added to merged file")
+                    print("Mix metadata added to merged file")
             else:
                 print(f"Warning: Could not add mix metadata: {result.stderr}")
                 if temp_output.exists():
@@ -1462,7 +1436,7 @@ class AlbumMerger:
                 for track in mix_info['tracklist']:
                     f.write(f"{track}\n")
 
-            print(f"✓ Tracklist saved to: {tracklist_path.name}")
+            print(f"Tracklist saved to: {tracklist_path.name}")
 
         except Exception as e:
             print(f"Warning: Could not create tracklist file: {e}")
